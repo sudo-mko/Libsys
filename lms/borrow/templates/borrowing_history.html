@@ -109,7 +109,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 {% if borrowing.calculated_status in 'borrowed,due_soon,due_today,overdue' %}
                                     <!-- Check if user has premium membership and can extend -->
-                                    {% if request.user.membership and request.user.membership.extension_days > 0 %}
+                                    {% if request.user.membership and request.user.membership.name|lower == 'premium' %}
                                         <!-- Check if already extended or has pending extension request -->
                                         {% if borrowing.is_extended %}
                                             <span class="text-blue-600 font-medium flex items-center">

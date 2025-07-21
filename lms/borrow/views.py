@@ -27,6 +27,11 @@ def borrow_book(request, book_id):
         messages.error(request, "Only library members can borrow books.")
         return redirect('library:book_detail', book_id=book_id)
     
+    # Check if user has a membership assigned
+    if not request.user.membership:
+        messages.error(request, "You need to have a membership to borrow books. Please contact a librarian.")
+        return redirect('library:book_detail', book_id=book_id)
+    
     # Check if user has already borrowed this book and not returned it
     existing_borrowing = Borrowing.objects.filter( # type: ignore
         user=request.user, 
@@ -48,11 +53,27 @@ def borrow_book(request, book_id):
         messages.error(request, "This book is currently borrowed. You can reserve it instead.")
         return redirect('library:book_detail', book_id=book_id)
     
+    # Check if user has reached their borrowing limit based on membership
+    active_borrowings_count = Borrowing.objects.filter( # type: ignore
+        user=request.user,
+        status__in=['borrowed', 'overdue'],
+        return_date__isnull=True
+    ).count()
+    
+    max_books = request.user.membership.max_books
+    if active_borrowings_count >= max_books:
+        messages.error(request, f"You have reached your borrowing limit of {max_books} books for your {request.user.membership.name} membership.")
+        return redirect('library:book_detail', book_id=book_id)
+    
+    # Set due date based on membership loan period
+    loan_period_days = request.user.membership.loan_period_days
+    due_date = timezone.now().date() + timedelta(days=loan_period_days)
+    
     # Create new borrowing record
     borrowing = Borrowing.objects.create( # type: ignore
         user=request.user,
         book=book,
-        due_date=timezone.now().date() + timedelta(days=7),
+        due_date=due_date,
         is_extended=False,
         status='borrowed'
     )
@@ -115,7 +136,7 @@ def request_extension(request, borrowing_id):
         return redirect('borrow:borrowing_history')
     
     # Check if user has premium membership
-    if not request.user.membership or request.user.membership.extension_days <= 0:
+    if not request.user.membership or request.user.membership.name.lower() != 'premium':
         messages.error(request, "Extension requests are only available for premium members.")
         return redirect('borrow:borrowing_history')
     
@@ -190,9 +211,7 @@ def approve_extension(request, extension_id):
     
     # Update borrowing record
     borrowing = extension_request.borrowing
-    extension_days = 7  # Default 7 days extension
-    if borrowing.user.membership and borrowing.user.membership.extension_days > 0:
-        extension_days = borrowing.user.membership.extension_days
+    extension_days = 7  # Fixed 7-day extension for premium members
     
     borrowing.due_date = borrowing.due_date + timedelta(days=extension_days)
     borrowing.is_extended = True
