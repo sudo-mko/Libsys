@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+
+{% block header %}
+{% endblock header %}
+
+{% block content %}
+{% csrf_token %}
+<script>
+    // Configure HTMX to include CSRF token in all requests
+    document.addEventListener('DOMContentLoaded', function() {
+        document.body.addEventListener('htmx:configRequest', function(evt) {
+            evt.detail.headers['X-CSRFToken'] = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        });
+    });
+</script>
+
+<div class="container mx-auto px-4 py-8">
+    <!-- Page header banner -->
+    <div class="bg-gradient-to-r from-orange-600 to-orange-700 rounded-lg shadow-lg mb-6">
+        <div class="px-6 py-8">
+            <h1 class="text-3xl font-bold text-white">Extension Requests</h1>
+            <p class="text-orange-100 mt-2">Review and manage book extension requests</p>
+        </div>
+    </div>
+
+    <!-- Extension requests table -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        {% if extension_requests %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Book</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Due Date</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Request Date</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for ext_request in extension_requests %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10">
+                                        <div class="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                            <span class="text-orange-600 font-medium text-sm">
+                                                {{ ext_request.borrowing.user.first_name|first|upper }}{{ ext_request.borrowing.user.last_name|first|upper }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            {{ ext_request.borrowing.user.get_full_name|default:ext_request.borrowing.user.username }}
+                                        </div>
+                                        <div class="text-sm text-gray-500">
+                                            {{ ext_request.borrowing.user.email }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ ext_request.borrowing.book.title }}</div>
+                                <div class="text-sm text-gray-500">{{ ext_request.borrowing.book.author }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ ext_request.borrowing.due_date|date:"M j, Y" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ ext_request.request_date|date:"M j, Y" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if ext_request.status == 'pending' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                        Pending
+                                    </span>
+                                {% elif ext_request.status == 'approved' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Approved
+                                    </span>
+                                {% else %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        Rejected
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                {% if ext_request.status == 'pending' %}
+                                    <button hx-get="{% url 'borrow:approve_extension_confirm' ext_request.id %}"
+                                            hx-target="#approveExtensionModalContent"
+                                            hx-swap="innerHTML"
+                                            onclick="document.getElementById('approveExtensionModal').classList.remove('hidden')"
+                                            class="text-green-600 hover:text-green-900 font-medium mr-3">
+                                        Approve
+                                    </button>
+                                    <button onclick="showRejectModal({{ ext_request.id }})" 
+                                            class="text-red-600 hover:text-red-900 font-medium">
+                                        Reject
+                                    </button>
+                                {% else %}
+                                    <span class="text-gray-400">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="px-6 py-4 text-center text-sm text-gray-500">
+                No extension requests available.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Approve Extension Modal -->
+<div id="approveExtensionModal" class="fixed inset-0 z-40 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div onclick="closeApproveModal()" class="fixed inset-0 bg-gray-500 opacity-75 transition-opacity z-40"></div>
+        
+        <!-- Modal content container - this is what HTMX will target -->
+        <div id="approveExtensionModalContent" class="relative z-50">
+            <!-- HTMX will load content here -->
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div id="rejectModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div onclick="closeRejectModal()" class="fixed inset-0 bg-gray-500 opacity-75 transition-opacity z-40"></div>
+        
+        <!-- Modal content -->
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full relative z-50">
+            <div class="bg-white p-8">
+        <div class="space-y-6">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Reject Extension Request</h3>
+                <p class="text-sm text-gray-600 mb-6">
+                    Please provide a reason for rejecting this extension request. This will help the user understand why their request was denied.
+                </p>
+            </div>
+            
+            <form id="rejectForm" method="post" class="space-y-6">
+                {% csrf_token %}
+                <div>
+                    <label for="rejection_reason" class="block text-sm font-medium text-gray-700 mb-2">
+                        Rejection Reason
+                    </label>
+                    <textarea name="rejection_reason" 
+                              id="rejection_reason"
+                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none"
+                              rows="4" 
+                              placeholder="e.g., Book is overdue, user has reached extension limit, etc."
+                              required></textarea>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button type="button" 
+                            onclick="closeRejectModal()" 
+                            class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors">
+                        Reject Request
+                    </button>
+                                 </div>
+             </form>
+         </div>
+             </div>
+         </div>
+     </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Approve modal functions
+    window.closeApproveModal = function() {
+        const modal = document.getElementById('approveExtensionModal');
+        modal.classList.add('hidden');
+        // Clear the modal content when closing
+        document.getElementById('approveExtensionModalContent').innerHTML = '';
+    };
+    
+    // Reject modal functions
+    window.showRejectModal = function(extensionId) {
+        console.log('Opening reject modal for extension:', extensionId);
+        document.getElementById('rejectForm').action = '/borrow/reject-extension/' + extensionId + '/';
+        document.getElementById('rejectModal').classList.remove('hidden');
+    };
+    
+    window.closeRejectModal = function() {
+        console.log('Closing reject modal');
+        document.getElementById('rejectModal').classList.add('hidden');
+        // Clear the form
+        document.querySelector('#rejectForm textarea').value = '';
+    };
+    
+    // Close modals when clicking outside
+    document.getElementById('rejectModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeRejectModal();
+        }
+    });
+    
+    // Close modals with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            if (!document.getElementById('rejectModal').classList.contains('hidden')) {
+                closeRejectModal();
+            }
+            if (!document.getElementById('approveExtensionModal').classList.contains('hidden')) {
+                closeApproveModal();
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

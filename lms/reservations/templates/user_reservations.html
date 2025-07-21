@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block header %}
+{% endblock header %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Page header banner -->
+    <div class="bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg shadow-lg mb-6">
+        <div class="px-6 py-8">
+            <h1 class="text-3xl font-bold text-white">My Reservations</h1>
+            <p class="text-purple-100 mt-2">View and manage your book reservations</p>
+        </div>
+    </div>
+
+    <!-- Reservations table -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        {% if reservations %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Book</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reserved</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for reservation in reservations %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    {% if reservation.book.cover %}
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <img class="h-10 w-10 rounded object-cover" src="{{ reservation.book.cover.url }}" alt="{{ reservation.book.title }}">
+                                        </div>
+                                    {% else %}
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <div class="h-10 w-10 rounded bg-gray-100 flex items-center justify-center">
+                                                <span class="text-gray-500 font-medium text-sm">📚</span>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ reservation.book.title }}</div>
+                                        <div class="text-sm text-gray-500">{{ reservation.book.author }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ reservation.created_at|date:"M j, Y" }}</div>
+                                <div class="text-sm text-gray-500">{{ reservation.created_at|timesince }} ago</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if reservation.status == 'pending' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                        Pending
+                                    </span>
+                                {% elif reservation.status == 'confirmed' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Confirmed
+                                    </span>
+                                {% elif reservation.status == 'expired' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        Expired
+                                    </span>
+                                {% else %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        {{ reservation.status|title }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if reservation.type == 'priority' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                        Priority
+                                    </span>
+                                {% else %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        Regular
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                {% if reservation.status == 'pending' %}
+                                    <form method="post" action="{% url 'reservations:cancel_reservation' reservation.id %}" class="inline">
+                                        {% csrf_token %}
+                                        <button type="submit" 
+                                                onclick="return confirm('Are you sure you want to cancel this reservation?')"
+                                                class="text-red-600 hover:text-red-900 font-medium">
+                                            Cancel
+                                        </button>
+                                    </form>
+                                {% elif reservation.status == 'confirmed' %}
+                                    <span class="text-green-600 font-medium">Ready to borrow</span>
+                                {% else %}
+                                    <span class="text-gray-400">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="px-6 py-4 text-center">
+                <div class="text-gray-500 mb-4">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No Reservations</h3>
+                <p class="text-sm text-gray-500 mb-4">You haven't made any book reservations yet.</p>
+                <a href="{% url 'library:home' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700">
+                    Browse Books
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

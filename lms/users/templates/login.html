@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block sidebar %}
+<!-- Empty sidebar for login page -->
+{% endblock %}
+
+{% block header %}
+<!-- Empty header for login page -->
+{% endblock header %}
+
+{% block content %}
+<div class="flex min-h-screen">
+    <!-- Left Panel - Mesh Gradient Background -->
+    <div class="hidden md:flex md:w-1/2 relative overflow-hidden">
+        <!-- Mesh gradient background -->
+        <div class="absolute inset-0 w-full h-full" style="background: radial-gradient(circle at 30% 20%, #FFF8E1 0%, transparent 60%), 
+                                                          radial-gradient(circle at 70% 65%, #FF8A65 0%, transparent 60%), 
+                                                          radial-gradient(circle at 10% 75%, #F06292 0%, transparent 60%), 
+                                                          radial-gradient(circle at 80% 20%, #FFCC80 0%, transparent 50%),
+                                                          radial-gradient(circle at 50% 50%, #BA68C8 0%, #9C27B0 100%);">
+        </div>
+    </div>
+
+    <!-- Right Panel - Login Form -->
+    <div class="w-full md:w-1/2 flex items-center justify-center px-6 md:px-20 py-12 md:py-16 bg-white">
+        <div class="w-full max-w-[400px]">
+            <!-- Logo/Icon -->
+            <div class="flex justify-center mb-8">
+                <div class="w-12 h-12 rounded-full bg-[#FF8A65] flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Heading and Subtitle -->
+            <h1 class="text-3xl font-semibold text-[#1F2937] text-center mb-2">Log in to your account</h1>
+            <p class="text-base text-[#6B7280] text-center mb-8">Welcome back! Please enter your details.</p>
+
+            <!-- Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="bg-{{ message.tags }}-100 border border-{{ message.tags }}-400 text-{{ message.tags }}-700 px-4 py-3 rounded mb-4">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Form -->
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Username Field -->
+                <div>
+                    <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-[#374151] mb-2">Username</label>
+                    {{ form.username|safe }}
+                    {% if form.username.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ form.username.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Password Field -->
+                <div>
+                    <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-[#374151] mb-2">Password</label>
+                    {{ form.password|safe }}
+                    {% if form.password.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ form.password.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Remember Me and Forgot Password -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input type="checkbox" id="remember" name="remember" class="h-4 w-4 text-[#FF8A65] focus:ring-[#FF8A65] border-gray-300 rounded">
+                        <label for="remember" class="ml-2 block text-sm text-[#6B7280]">Remember for 30 days</label>
+                    </div>
+                    <a href="#" class="text-sm text-[#FF8A65] hover:text-[#FF7043]">Forgot password</a>
+                </div>
+
+                <!-- Sign In Button -->
+                <button type="submit" class="w-full h-12 bg-[#FF8A65] hover:bg-[#FF7043] text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
+                    Sign in
+                </button>
+
+                <!-- Google Sign In -->
+                <button type="button" class="w-full h-12 bg-white border border-[#D1D5DB] hover:bg-[#F9FAFB] text-[#374151] font-medium py-3 px-6 rounded-lg flex items-center justify-center transition duration-200">
+                    <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.345-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.39-.189-1.989H12.24z" fill="currentColor"/>
+                    </svg>
+                    Sign in with Google
+                </button>
+            </form>
+
+            <!-- Sign Up Link -->
+            <div class="text-center mt-6">
+                <span class="text-sm text-[#6B7280]">Don't have an account? </span>
+                <a href="{% url 'register' %}" class="text-sm text-[#FF8A65] hover:text-[#FF7043] font-medium">Sign up</a>
+            </div>
+
+            <!-- Copyright -->
+            <div class="mt-10 text-center">
+                <p class="text-xs text-[#9CA3AF]">© softzino_technologies</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block header %}
+{% endblock header %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Page header banner -->
+    <div class="bg-gradient-to-r from-green-600 to-green-700 rounded-lg shadow-lg mb-6">
+        <div class="px-6 py-8">
+            <h1 class="text-3xl font-bold text-white">Borrow Records</h1>
+            <p class="text-green-100 mt-2">Track and manage book borrowing records</p>
+        </div>
+    </div>
+
+    <!-- Borrow records table -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        {% if borrow %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Book</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Borrow Date</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for borrow_record in borrow %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10">
+                                        <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                                            <span class="text-green-600 font-medium text-sm">
+                                                {{ borrow_record.user.first_name|first|upper }}{{ borrow_record.user.last_name|first|upper }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            {{ borrow_record.user.get_full_name|default:borrow_record.user.username }}
+                                        </div>
+                                        <div class="text-sm text-gray-500">
+                                            {{ borrow_record.user.email }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ borrow_record.book.title }}</div>
+                                <div class="text-sm text-gray-500">{{ borrow_record.book.author }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ borrow_record.borrow_date|date:"M j, Y" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ borrow_record.due_date|date:"M j, Y" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if borrow_record.status == 'borrowed' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                        Borrowed
+                                    </span>
+                                {% elif borrow_record.status == 'returned' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Returned
+                                    </span>
+                                {% elif borrow_record.status == 'overdue' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        Overdue
+                                    </span>
+                                {% else %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        {{ borrow_record.status|title }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="px-6 py-4 text-center text-sm text-gray-500">
+                No borrow records available.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

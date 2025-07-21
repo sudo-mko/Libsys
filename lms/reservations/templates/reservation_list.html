@@ -1,0 +1,423 @@
+{% extends 'base.html' %}
+
+{% block header %}
+{% endblock header %}
+
+{% block content %}
+{% csrf_token %}
+<script>
+    // Configure HTMX to include CSRF token in all requests
+    document.addEventListener('DOMContentLoaded', function() {
+        document.body.addEventListener('htmx:configRequest', function(evt) {
+            evt.detail.headers['X-CSRFToken'] = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        });
+    });
+
+    // Get modal elements
+    const approveModal = document.getElementById('approveReservationModal');
+    const expireModal = document.getElementById('expireReservationModal');
+    const rejectModal = document.getElementById('rejectReservationModal');
+    
+    // Make all functions globally accessible
+    window.openApproveModal = (reservationId) => {
+        console.log('Opening approve modal for reservation:', reservationId);
+        htmx.ajax('GET', `/reservations/approve-confirm/${reservationId}/`, {
+            target: '#approveReservationModalContent',
+            swap: 'innerHTML'
+        }).then(() => {
+            console.log('Approve content loaded successfully');
+        }).catch((error) => {
+            console.error('Error loading approve content:', error);
+        });
+        approveModal.classList.remove('hidden');
+    };
+    
+    window.openExpireModal = (reservationId) => {
+        console.log('Opening expire modal for reservation:', reservationId);
+        htmx.ajax('GET', `/reservations/expire-confirm/${reservationId}/`, {
+            target: '#expireReservationModalContent',
+            swap: 'innerHTML'
+        }).then(() => {
+            console.log('Expire content loaded successfully');
+        }).catch((error) => {
+            console.error('Error loading expire content:', error);
+        });
+        expireModal.classList.remove('hidden');
+    };
+    
+    window.openRejectModal = (reservationId) => {
+        console.log('Opening reject modal for reservation:', reservationId);
+        htmx.ajax('GET', `/reservations/reject-confirm/${reservationId}/`, {
+            target: '#rejectReservationModalContent',
+            swap: 'innerHTML'
+        }).then(() => {
+            console.log('Reject content loaded successfully');
+        }).catch((error) => {
+            console.error('Error loading reject content:', error);
+        });
+        rejectModal.classList.remove('hidden');
+    };
+
+    // Dropdown functionality
+    window.toggleDropdown = (reservationId) => {
+        const dropdown = document.getElementById(`dropdown${reservationId}`);
+        dropdown.classList.toggle('hidden');
+    };
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+        const dropdowns = document.querySelectorAll('[id^="dropdown"]');
+        dropdowns.forEach(dropdown => {
+            const button = dropdown.previousElementSibling;
+            if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    });
+
+    // Escape key handler for all modals and dropdowns
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            if (!approveModal.classList.contains('hidden')) {
+                approveModal.classList.add('hidden');
+                document.getElementById('approveReservationModalContent').innerHTML = '';
+            }
+            if (!expireModal.classList.contains('hidden')) {
+                expireModal.classList.add('hidden');
+                document.getElementById('expireReservationModalContent').innerHTML = '';
+            }
+            if (!rejectModal.classList.contains('hidden')) {
+                rejectModal.classList.add('hidden');
+                document.getElementById('rejectReservationModalContent').innerHTML = '';
+            }
+            // Close all dropdowns
+            const dropdowns = document.querySelectorAll('[id^="dropdown"]');
+            dropdowns.forEach(dropdown => dropdown.classList.add('hidden'));
+        }
+    });
+</script>
+
+<div class="container mx-auto px-4 py-8">
+    <!-- Page header banner -->
+    <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-lg mb-6">
+        <div class="px-6 py-8">
+            <h1 class="text-3xl font-bold text-white">Reservation Requests</h1>
+            <p class="text-blue-100 mt-2">Review and manage book reservation requests</p>
+        </div>
+    </div>
+
+    <!-- Reservations table -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        {% if reservations %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Book</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for reservation in reservations %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10">
+                                        <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                            <span class="text-blue-600 font-medium text-sm">
+                                                {{ reservation.user.first_name|first|upper }}{{ reservation.user.last_name|first|upper }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            {{ reservation.user.get_full_name|default:reservation.user.username }}
+                                        </div>
+                                        <div class="text-sm text-gray-500">
+                                            {{ reservation.user.email }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ reservation.book.title }}</div>
+                                <div class="text-sm text-gray-500">{{ reservation.book.author }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if reservation.status == 'pending' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                        Pending
+                                    </span>
+                                {% elif reservation.status == 'confirmed' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Confirmed
+                                    </span>
+                                {% else %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        Expired
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if reservation.type == 'priority' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                        Priority
+                                    </span>
+                                {% else %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        Regular
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                {% if reservation.status == 'pending' %}
+                                    <!-- Dropdown for pending reservations -->
+                                    <div class="relative inline-block text-left">
+                                        <button type="button" class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" id="reservationMenu{{ reservation.id }}" onclick="toggleDropdown({{ reservation.id }})">
+                                            Actions
+                                            <svg class="-mr-1 ml-2 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </button>
+                                        <div class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden z-50" id="dropdown{{ reservation.id }}">
+                                            <div class="py-1">
+                                                <button onclick="openApproveModal({{ reservation.id }}); toggleDropdown({{ reservation.id }})" 
+                                                        class="block w-full text-left px-4 py-2 text-sm text-green-700 hover:bg-green-50">
+                                                    <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                    Approve
+                                                </button>
+                                                <button onclick="openRejectModal({{ reservation.id }}); toggleDropdown({{ reservation.id }})" 
+                                                        class="block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50">
+                                                    <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                    Reject
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% elif reservation.status == 'confirmed' %}
+                                    <button onclick="openExpireModal({{ reservation.id }})" 
+                                            class="expire-btn bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
+                                        Mark Expired
+                                    </button>
+                                {% elif reservation.status == 'rejected' %}
+                                    <span class="text-red-500 text-sm">Rejected</span>
+                                {% else %}
+                                    <span class="text-gray-500 text-sm">Expired</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="px-6 py-4 text-center text-sm text-gray-500">
+                No reservation requests available.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% if reservations.has_other_pages %}
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-6 rounded-lg">
+            <div class="flex-1 flex justify-between sm:hidden">
+                {% if reservations.has_previous %}
+                    <a href="?page={{ reservations.previous_page_number }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Previous
+                    </a>
+                {% endif %}
+                {% if reservations.has_next %}
+                    <a href="?page={{ reservations.next_page_number }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Next
+                    </a>
+                {% endif %}
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Showing <span class="font-medium">{{ reservations.start_index }}</span> to <span class="font-medium">{{ reservations.end_index }}</span> of <span class="font-medium">{{ reservations.paginator.count }}</span> results
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                        {% if reservations.has_previous %}
+                            <a href="?page={{ reservations.previous_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                Previous
+                            </a>
+                        {% endif %}
+                        {% for num in reservations.paginator.page_range %}
+                            {% if reservations.number == num %}
+                                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">
+                                    {{ num }}
+                                </span>
+                            {% else %}
+                                <a href="?page={{ num }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                    {{ num }}
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+                        {% if reservations.has_next %}
+                            <a href="?page={{ reservations.next_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                Next
+                            </a>
+                        {% endif %}
+                    </nav>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Approve Reservation Modal -->
+    <div id="approveReservationModal" class="fixed inset-0 z-40 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div onclick="document.getElementById('approveReservationModal').classList.add('hidden'); document.getElementById('approveReservationModalContent').innerHTML = '';" class="fixed inset-0 bg-gray-500 opacity-75 transition-opacity z-40"></div>
+            
+            <!-- Modal content container - this is what HTMX will target -->
+            <div id="approveReservationModalContent" class="relative z-50">
+                <!-- HTMX will load content here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Expire Reservation Modal -->
+    <div id="expireReservationModal" class="fixed inset-0 z-40 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div onclick="document.getElementById('expireReservationModal').classList.add('hidden'); document.getElementById('expireReservationModalContent').innerHTML = '';" class="fixed inset-0 bg-gray-500 opacity-75 transition-opacity z-40"></div>
+            
+            <!-- Modal content container - this is what HTMX will target -->
+            <div id="expireReservationModalContent" class="relative z-50">
+                <!-- HTMX will load content here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Reservation Modal -->
+    <div id="rejectReservationModal" class="fixed inset-0 z-40 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div onclick="document.getElementById('rejectReservationModal').classList.add('hidden'); document.getElementById('rejectReservationModalContent').innerHTML = '';" class="fixed inset-0 bg-gray-500 opacity-75 transition-opacity z-40"></div>
+            
+            <!-- Modal content container - this is what HTMX will target -->
+            <div id="rejectReservationModalContent" class="relative z-50">
+                <!-- HTMX will load content here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Configure HTMX to include CSRF token in all requests
+        document.body.addEventListener('htmx:configRequest', function(evt) {
+            evt.detail.headers['X-CSRFToken'] = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        });
+
+        // Get modal elements after DOM is loaded
+        const approveModal = document.getElementById('approveReservationModal');
+        const expireModal = document.getElementById('expireReservationModal');
+        const rejectModal = document.getElementById('rejectReservationModal');
+        
+        // Make all functions globally accessible
+        window.openApproveModal = function(reservationId) {
+            console.log('Opening approve modal for reservation:', reservationId);
+            if (!approveModal) {
+                console.error('Approve modal not found!');
+                return;
+            }
+            htmx.ajax('GET', `/reservations/approve-confirm/${reservationId}/`, {
+                target: '#approveReservationModalContent',
+                swap: 'innerHTML'
+            }).then(() => {
+                console.log('Approve content loaded successfully');
+            }).catch((error) => {
+                console.error('Error loading approve content:', error);
+            });
+            approveModal.classList.remove('hidden');
+        };
+        
+        window.openExpireModal = function(reservationId) {
+            console.log('Opening expire modal for reservation:', reservationId);
+            if (!expireModal) {
+                console.error('Expire modal not found!');
+                return;
+            }
+            htmx.ajax('GET', `/reservations/expire-confirm/${reservationId}/`, {
+                target: '#expireReservationModalContent',
+                swap: 'innerHTML'
+            }).then(() => {
+                console.log('Expire content loaded successfully');
+            }).catch((error) => {
+                console.error('Error loading expire content:', error);
+            });
+            expireModal.classList.remove('hidden');
+        };
+        
+        window.openRejectModal = function(reservationId) {
+            console.log('Opening reject modal for reservation:', reservationId);
+            if (!rejectModal) {
+                console.error('Reject modal not found!');
+                return;
+            }
+            htmx.ajax('GET', `/reservations/reject-confirm/${reservationId}/`, {
+                target: '#rejectReservationModalContent',
+                swap: 'innerHTML'
+            }).then(() => {
+                console.log('Reject content loaded successfully');
+            }).catch((error) => {
+                console.error('Error loading reject content:', error);
+            });
+            rejectModal.classList.remove('hidden');
+        };
+
+        // Dropdown functionality
+        window.toggleDropdown = function(reservationId) {
+            const dropdown = document.getElementById('dropdown' + reservationId);
+            if (dropdown) {
+                dropdown.classList.toggle('hidden');
+            }
+        };
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdowns = document.querySelectorAll('[id^="dropdown"]');
+            dropdowns.forEach(dropdown => {
+                const button = dropdown.previousElementSibling;
+                if (button && !button.contains(event.target) && !dropdown.contains(event.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+        });
+
+        // Escape key handler for all modals and dropdowns
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                if (approveModal && !approveModal.classList.contains('hidden')) {
+                    approveModal.classList.add('hidden');
+                    document.getElementById('approveReservationModalContent').innerHTML = '';
+                }
+                if (expireModal && !expireModal.classList.contains('hidden')) {
+                    expireModal.classList.add('hidden');
+                    document.getElementById('expireReservationModalContent').innerHTML = '';
+                }
+                if (rejectModal && !rejectModal.classList.contains('hidden')) {
+                    rejectModal.classList.add('hidden');
+                    document.getElementById('rejectReservationModalContent').innerHTML = '';
+                }
+                // Close all dropdowns
+                const dropdowns = document.querySelectorAll('[id^="dropdown"]');
+                dropdowns.forEach(dropdown => dropdown.classList.add('hidden'));
+            }
+        });
+    });
+</script>
+
+{% endblock %}

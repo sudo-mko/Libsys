@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-3xl mx-auto">
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">Update Book: {{ book.title }}</h1>
+            
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-12 gap-4">
+                    <!-- Left column - Cover image upload -->
+                    <div class="col-span-12 md:col-span-3">
+                        <div class="space-y-2">
+                            <label for="id_cover" class="block text-sm font-medium text-gray-700">
+                                Book Cover
+                            </label>
+                            <div class="mt-1">
+                                {% if book.cover %}
+                                    <div class="mb-2">
+                                        <img src="{{ book.cover.url }}" alt="Current cover" class="w-full h-40 object-cover rounded-md">
+                                        <p class="text-xs text-gray-500 mt-1">Current cover</p>
+                                    </div>
+                                {% endif %}
+                                <div class="flex items-center justify-center w-full h-40 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md">
+                                    {{ form.cover }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right columns - Form fields -->
+                    <div class="col-span-12 md:col-span-9 space-y-4">
+                        <!-- Title -->
+                        <div>
+                            <label for="id_title" class="block text-sm font-medium text-gray-700">
+                                {{ form.title.label }}
+                                {% if form.title.field.required %}
+                                    <span class="text-red-500">*</span>
+                                {% endif %}
+                            </label>
+                            {{ form.title|add_class:"mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" }}
+                            {% if form.title.errors %}
+                                <div class="text-red-500 text-sm mt-1">
+                                    {% for error in form.title.errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Author and ISBN -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="id_author" class="block text-sm font-medium text-gray-700">
+                                    {{ form.author.label }}
+                                    {% if form.author.field.required %}
+                                        <span class="text-red-500">*</span>
+                                    {% endif %}
+                                </label>
+                                {{ form.author|add_class:"mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" }}
+                                {% if form.author.errors %}
+                                    <div class="text-red-500 text-sm mt-1">
+                                        {% for error in form.author.errors %}
+                                            <p>{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div>
+                                <label for="id_isbn" class="block text-sm font-medium text-gray-700">
+                                    {{ form.isbn.label }}
+                                    {% if form.isbn.field.required %}
+                                        <span class="text-red-500">*</span>
+                                    {% endif %}
+                                </label>
+                                {{ form.isbn|add_class:"mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" }}
+                                {% if form.isbn.errors %}
+                                    <div class="text-red-500 text-sm mt-1">
+                                        {% for error in form.isbn.errors %}
+                                            <p>{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Publication Date, Category, Edition -->
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label for="id_publication_date" class="block text-sm font-medium text-gray-700">
+                                    {{ form.publication_date.label }}
+                                    {% if form.publication_date.field.required %}
+                                        <span class="text-red-500">*</span>
+                                    {% endif %}
+                                </label>
+                                {{ form.publication_date|add_class:"mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" }}
+                                {% if form.publication_date.errors %}
+                                    <div class="text-red-500 text-sm mt-1">
+                                        {% for error in form.publication_date.errors %}
+                                            <p>{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div>
+                                <label for="id_category" class="block text-sm font-medium text-gray-700">
+                                    {{ form.category.label }}
+                                    {% if form.category.field.required %}
+                                        <span class="text-red-500">*</span>
+                                    {% endif %}
+                                </label>
+                                {{ form.category|add_class:"mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" }}
+                                {% if form.category.errors %}
+                                    <div class="text-red-500 text-sm mt-1">
+                                        {% for error in form.category.errors %}
+                                            <p>{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div>
+                                <label for="id_edition" class="block text-sm font-medium text-gray-700">
+                                    {{ form.edition.label }}
+                                    {% if form.edition.field.required %}
+                                        <span class="text-red-500">*</span>
+                                    {% endif %}
+                                </label>
+                                {{ form.edition|add_class:"mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" }}
+                                {% if form.edition.errors %}
+                                    <div class="text-red-500 text-sm mt-1">
+                                        {% for error in form.edition.errors %}
+                                            <p>{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Branch -->
+                        <div>
+                            <label for="id_branch" class="block text-sm font-medium text-gray-700">
+                                {{ form.branch.label }}
+                                {% if form.branch.field.required %}
+                                    <span class="text-red-500">*</span>
+                                {% endif %}
+                            </label>
+                            {{ form.branch|add_class:"mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" }}
+                            {% if form.branch.errors %}
+                                <div class="text-red-500 text-sm mt-1">
+                                    {% for error in form.branch.errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Description -->
+                        <div>
+                            <label for="id_description" class="block text-sm font-medium text-gray-700">
+                                {{ form.description.label }}
+                                {% if form.description.field.required %}
+                                    <span class="text-red-500">*</span>
+                                {% endif %}
+                            </label>
+                            {{ form.description|add_class:"mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-20" }}
+                            {% if form.description.errors %}
+                                <div class="text-red-500 text-sm mt-1">
+                                    {% for error in form.description.errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <a href="{% url 'library:book_add' %}" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Cancel
+                    </a>
+                    <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Update Book
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

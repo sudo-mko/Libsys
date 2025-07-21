@@ -1,0 +1,231 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+    <title>Library Management System</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+		{% tailwind_css %}
+		<!-- Add Font Awesome for better icons -->
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+		<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" integrity="sha384-Akqfrbj/HpNVo8k11SXBb6TlBWmXXlYQrCSqEWmyKJe+hDm3Z/B2WVG4smwBkRVm" crossorigin="anonymous"></script>
+	</head>
+
+	<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+		<div class="flex h-screen overflow-hidden">
+			{% block sidebar %}
+				{% include 'components/sidebar.html' %}
+			{% endblock sidebar %}
+
+			<!-- Main content -->
+			<div class="flex flex-col flex-1 w-0 overflow-hidden">
+				<!-- Header -->
+				 {% block header %}
+					<header class="bg-white shadow-sm z-10">
+						<div class="flex items-center justify-between h-16 px-6">
+							<!-- Mobile menu button -->
+							<div class="flex items-center md:hidden">
+								<button type="button" id="sidebar-toggle" class="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Open sidebar</span>
+									<i class="fas fa-bars h-6 w-6"></i>
+								</button>
+							</div>
+							
+							<!-- Search bar -->
+							<div class="flex-1 max-w-lg px-4">
+								<div class="relative">
+									<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+										<i class="fas fa-search text-gray-400"></i>
+									</div>
+									<input class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-full leading-5 bg-gray-100 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Search books, members..." type="search">
+								</div>
+							</div>
+							
+							<!-- Right side header items -->
+							<div class="ml-4 flex items-center md:ml-6 space-x-4">
+								<!-- Guest buttons (shown when not logged in) -->
+								<div class="{% if user.is_authenticated %}hidden{% endif %}">
+									<a href="{% url 'login' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+										Login
+									</a>
+									<a href="{% url 'register' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+										Sign up
+									</a>
+								</div>
+								
+								<!-- Notification bell -->
+								{% if user.is_authenticated %}
+								<button type="button" class="p-1 rounded-full text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 relative">
+									<span class="sr-only">View notifications</span>
+									<i class="fas fa-bell h-6 w-6"></i>
+									<span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+								</button>
+								
+								<!-- Profile dropdown -->
+								<div class="relative">
+									<button type="button" class="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" id="user-menu-button">
+										<span class="sr-only">Open user menu</span>
+										<div class="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center text-white">
+											<span class="text-sm font-medium">{{ user.username|slice:":2"|upper }}</span>
+										</div>
+									</button>
+								</div>
+								{% endif %}
+							</div>
+						</div>
+					</header>
+				{% endblock header %}
+				<!-- Page content -->
+				<main class="flex-1 relative overflow-y-auto focus:outline-none  bg-gray-50">
+					<!-- Messages -->
+					{% if messages %}
+						<div class="fixed top-4 right-4 z-50 space-y-2">
+							{% for message in messages %}
+								{% if message.tags == 'success' %}
+									<div class="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg max-w-md">
+										<div class="flex items-center justify-between">
+											<span>{{ message }}</span>
+											<button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+												<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+												</svg>
+											</button>
+										</div>
+									</div>
+								{% elif message.tags == 'error' %}
+									<div class="bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg max-w-md">
+										<div class="flex items-center justify-between">
+											<span>{{ message }}</span>
+											<button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+												<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+												</svg>
+											</button>
+										</div>
+									</div>
+								{% else %}
+									<div class="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg max-w-md">
+										<div class="flex items-center justify-between">
+											<span>{{ message }}</span>
+											<button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+												<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+												</svg>
+											</button>
+										</div>
+									</div>
+								{% endif %}
+							{% endfor %}
+						</div>
+					{% endif %}
+					<div class=" mx-auto">
+						{% block content %}
+						{% endblock %}
+					</div>
+				</main>
+			</div>
+		</div>
+		
+		<!-- JavaScript for functionality -->
+		<script>
+			document.addEventListener('DOMContentLoaded', function() {
+				// Sidebar toggle functionality for mobile
+				const sidebarToggle = document.getElementById('sidebar-toggle');
+				const sidebar = document.getElementById('sidebar');
+				const sidebarOverlay = document.getElementById('sidebar-overlay');
+				
+				function toggleMobileSidebar() {
+					// Toggle sidebar visibility on mobile
+					if (sidebar.classList.contains('hidden')) {
+						// Show sidebar
+						sidebar.classList.remove('hidden');
+						sidebar.classList.add('fixed', 'inset-y-0', 'left-0', 'z-30', 'flex');
+						sidebarOverlay.classList.remove('hidden');
+					} else {
+						// Hide sidebar
+						sidebar.classList.add('hidden');
+						sidebar.classList.remove('fixed', 'inset-y-0', 'left-0', 'z-30', 'flex');
+						sidebarOverlay.classList.add('hidden');
+					}
+				}
+				
+				// Collapsible sidebar functionality
+				const collapseBtn = document.getElementById('collapse-btn');
+				const sidebarContainer = document.getElementById('sidebar-container');
+				const sidebarTextItems = document.querySelectorAll('.sidebar-text-item');
+				
+				function toggleSidebarCollapse() {
+					// Toggle sidebar collapse state
+					if (sidebarContainer.classList.contains('w-64')) {
+						// Collapse sidebar to icons only
+						sidebarContainer.classList.remove('w-64');
+						sidebarContainer.classList.add('w-16');
+						
+						// Hide text elements
+						sidebarTextItems.forEach(item => {
+							item.classList.add('hidden');
+						});
+						
+						// Change chevron direction
+						collapseBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+						
+						// Add tooltips for icons when collapsed
+						document.querySelectorAll('#sidebar a').forEach(link => {
+							const text = link.querySelector('.sidebar-text-item').textContent.trim();
+							link.setAttribute('title', text);
+						});
+					} else {
+						// Expand sidebar
+						sidebarContainer.classList.remove('w-16');
+						sidebarContainer.classList.add('w-64');
+						
+						// Show text elements
+						sidebarTextItems.forEach(item => {
+							item.classList.remove('hidden');
+						});
+						
+						// Change chevron direction
+						collapseBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+						
+						// Remove tooltips
+						document.querySelectorAll('#sidebar a').forEach(link => {
+							link.removeAttribute('title');
+						});
+					}
+				}
+				
+				// Add click event listeners
+				if (sidebarToggle) {
+					sidebarToggle.addEventListener('click', toggleMobileSidebar);
+				}
+				if (sidebarOverlay) {
+					sidebarOverlay.addEventListener('click', toggleMobileSidebar);
+				}
+				if (collapseBtn) {
+					collapseBtn.addEventListener('click', toggleSidebarCollapse);
+				}
+				
+				// Close sidebar when window is resized to desktop size
+				window.addEventListener('resize', function() {
+					if (window.innerWidth >= 768) { // md breakpoint
+						if (sidebar) {
+							sidebar.classList.remove('fixed', 'inset-y-0', 'left-0', 'z-30');
+							sidebarOverlay.classList.add('hidden');
+							if (window.innerWidth < 768) {
+								sidebar.classList.add('hidden');
+							} else {
+								sidebar.classList.remove('hidden');
+								sidebar.classList.add('md:flex');
+							}
+						}
+					}
+				});
+				
+				// User dropdown functionality could be added here
+				const userMenuButton = document.getElementById('user-menu-button');
+				// Implementation for user dropdown would go here
+			});
+		</script>
+	</body>
+</html>
