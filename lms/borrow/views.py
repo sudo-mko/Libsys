@@ -9,6 +9,8 @@ from .forms import BorrowingForm
 from library.models import Book
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
+from django.utils import timezone
+from datetime import timedelta
 
 # Create your views here.
 def borrow_list(request):
@@ -63,7 +65,42 @@ def borrow_book(request, book_id):
 def borrowing_history(request):
     # Get borrowings for the current user, ordered by borrow date (newest first)
     borrowings = Borrowing.objects.filter(user=request.user).order_by('-borrow_date')  # type: ignore
-    return render(request, 'borrowing_history.html', {'borrowings': borrowings})
+    
+    # Calculate status for each borrowing
+ 
+    
+    today = timezone.now().date()
+    enhanced_borrowings = []
+    
+    for borrowing in borrowings:
+        # Create a copy of the borrowing object with additional fields
+        enhanced_borrowing = borrowing
+        
+        if borrowing.status in ['borrowed', 'overdue']:
+            days_until_due = (borrowing.due_date - today).days
+            
+            if days_until_due < 0:
+                # Past due date
+                enhanced_borrowing.calculated_status = 'overdue'
+                enhanced_borrowing.days_overdue = abs(days_until_due)
+            elif days_until_due == 0:
+                # Due today
+                enhanced_borrowing.calculated_status = 'due_today'
+            elif days_until_due <= 2:
+                # Due within 2 days
+                enhanced_borrowing.calculated_status = 'due_soon'
+                enhanced_borrowing.days_until_due = days_until_due
+            else:
+                # More than 2 days away
+                enhanced_borrowing.calculated_status = 'borrowed'
+                enhanced_borrowing.days_until_due = days_until_due
+        else:
+            # Returned or other status
+            enhanced_borrowing.calculated_status = borrowing.status
+        
+        enhanced_borrowings.append(enhanced_borrowing)
+    
+    return render(request, 'borrowing_history.html', {'borrowings': enhanced_borrowings})
 
 
 @login_required

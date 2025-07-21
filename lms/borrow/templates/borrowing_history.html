@@ -64,32 +64,50 @@
                                 {% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                {% if borrowing.status == 'borrowed' %}
-                                    {% if borrowing.is_extended %}
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                            Borrowed (Extended)
-                                        </span>
-                                    {% else %}
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                            Borrowed
-                                        </span>
-                                    {% endif %}
-                                {% elif borrowing.status == 'returned' %}
+                                {% if borrowing.calculated_status == 'returned' %}
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                         Returned
                                     </span>
-                                {% elif borrowing.status == 'overdue' %}
+                                {% elif borrowing.calculated_status == 'overdue' %}
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                        Overdue
+                                        {% if borrowing.is_extended %}
+                                            Overdue (Extended)
+                                        {% else %}
+                                            Overdue
+                                        {% endif %}
+                                    </span>
+                                {% elif borrowing.calculated_status == 'due_today' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                        {% if borrowing.is_extended %}
+                                            Due Today (Extended)
+                                        {% else %}
+                                            Due Today
+                                        {% endif %}
+                                    </span>
+                                {% elif borrowing.calculated_status == 'due_soon' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
+                                        {% if borrowing.is_extended %}
+                                            Due Soon (Extended)
+                                        {% else %}
+                                            Due Soon
+                                        {% endif %}
+                                    </span>
+                                {% elif borrowing.calculated_status == 'borrowed' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                        {% if borrowing.is_extended %}
+                                            Borrowed (Extended)
+                                        {% else %}
+                                            Borrowed
+                                        {% endif %}
                                     </span>
                                 {% else %}
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                        {{ borrowing.status|title }}
+                                        {{ borrowing.calculated_status|title }}
                                     </span>
                                 {% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                {% if borrowing.status == 'borrowed' %}
+                                {% if borrowing.calculated_status in 'borrowed,due_soon,due_today,overdue' %}
                                     <!-- Check if user has premium membership and can extend -->
                                     {% if request.user.membership and request.user.membership.extension_days > 0 %}
                                         <!-- Check if already extended or has pending extension request -->
@@ -121,34 +139,43 @@
                                             </form>
                                         {% endif %}
                                     {% else %}
-                                        <!-- Basic member - show useful borrowing info -->
-                                        {% now "Y-m-d" as today %}
-                                        {% if borrowing.due_date|date:"Y-m-d" >= today %}
+                                        <!-- Basic member - show useful borrowing info using calculated values -->
+                                        {% if borrowing.calculated_status == 'overdue' %}
+                                            <span class="text-red-600 font-medium flex items-center">
+                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                                </svg>
+                                                Overdue by {{ borrowing.days_overdue }} day{{ borrowing.days_overdue|pluralize }}
+                                            </span>
+                                        {% elif borrowing.calculated_status == 'due_today' %}
+                                            <span class="text-yellow-600 font-medium flex items-center">
+                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                Due today
+                                            </span>
+                                        {% elif borrowing.calculated_status == 'due_soon' %}
+                                            <span class="text-orange-600 font-medium flex items-center">
+                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                Due in {{ borrowing.days_until_due }} day{{ borrowing.days_until_due|pluralize }}
+                                            </span>
+                                        {% else %}
                                             <span class="text-green-600 font-medium flex items-center">
                                                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                 </svg>
-                                                Due {{ borrowing.due_date|timeuntil }}
-                                            </span>
-                                        {% else %}
-                                            <span class="text-gray-600 font-medium">
-                                                Borrowed {{ borrowing.borrow_date|timesince }} ago
+                                                Due in {{ borrowing.days_until_due }} day{{ borrowing.days_until_due|pluralize }}
                                             </span>
                                         {% endif %}
                                     {% endif %}
-                                {% elif borrowing.status == 'returned' %}
+                                {% elif borrowing.calculated_status == 'returned' %}
                                     <span class="text-green-600 font-medium flex items-center">
                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
                                         Returned {{ borrowing.return_date|date:"M j, Y" }}
-                                    </span>
-                                {% elif borrowing.status == 'overdue' %}
-                                    <span class="text-red-600 font-medium flex items-center">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                                        </svg>
-                                        Overdue by {{ borrowing.due_date|timesince }}
                                     </span>
                                 {% else %}
                                     <span class="text-gray-400">-</span>
