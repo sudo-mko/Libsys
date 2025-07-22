@@ -1,0 +1,173 @@
+<div class="flex items-center justify-between p-4 border-b">
+    <h3 class="text-lg font-medium text-gray-900">Confirm Book Return</h3>
+    <button type="button" onclick="closeReturnModal()" class="text-gray-400 hover:text-gray-600">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+    </button>
+</div>
+
+<div class="p-6">
+    <!-- Borrowing Details -->
+    <div class="bg-gray-50 rounded-lg p-4 mb-6">
+        <h4 class="text-sm font-medium text-gray-900 mb-3">Return Details</h4>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Member Info -->
+            <div>
+                <div class="flex items-center space-x-3">
+                    <div class="flex-shrink-0 h-12 w-12">
+                        <div class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                            <span class="text-blue-600 font-medium">{{ borrowing.user.first_name|first }}{{ borrowing.user.last_name|first }}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-900">{{ borrowing.user.get_full_name }}</p>
+                        <p class="text-xs text-gray-500">{{ borrowing.user.username }}</p>
+                        {% if borrowing.user.membership %}
+                            <p class="text-xs text-blue-600">{{ borrowing.user.membership.name }} Member</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Book Info -->
+            <div>
+                <div class="flex items-center space-x-3">
+                    {% if borrowing.book.cover %}
+                        <div class="flex-shrink-0 h-12 w-12">
+                            <img class="h-12 w-12 rounded object-cover" src="{{ borrowing.book.cover.url }}" alt="{{ borrowing.book.title }}">
+                        </div>
+                    {% else %}
+                        <div class="flex-shrink-0 h-12 w-12">
+                            <div class="h-12 w-12 rounded bg-gray-100 flex items-center justify-center">
+                                <span class="text-gray-500 text-lg">📚</span>
+                            </div>
+                        </div>
+                    {% endif %}
+                    <div>
+                        <p class="text-sm font-medium text-gray-900">{{ borrowing.book.title }}</p>
+                        <p class="text-xs text-gray-500">by {{ borrowing.book.author }}</p>
+                        {% if borrowing.book.isbn %}
+                            <p class="text-xs text-gray-400">ISBN: {{ borrowing.book.isbn }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Date Information -->
+    <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="bg-blue-50 rounded-lg p-3">
+            <p class="text-xs font-medium text-blue-600 uppercase tracking-wide">Borrowed Date</p>
+            <p class="text-sm font-semibold text-blue-900">{{ borrowing.borrow_date|date:"F j, Y" }}</p>
+        </div>
+        
+        <div class="bg-{% if is_overdue %}red{% else %}green{% endif %}-50 rounded-lg p-3">
+            <p class="text-xs font-medium text-{% if is_overdue %}red{% else %}green{% endif %}-600 uppercase tracking-wide">Due Date</p>
+            <p class="text-sm font-semibold text-{% if is_overdue %}red{% else %}green{% endif %}-900">{{ borrowing.due_date|date:"F j, Y" }}</p>
+        </div>
+    </div>
+
+    <!-- Overdue Status & Fine -->
+    {% if is_overdue %}
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">Book is Overdue</h3>
+                    <div class="mt-2 text-sm text-red-700">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <p class="font-semibold">Days Overdue</p>
+                                <p class="text-lg">{{ days_overdue }} day{{ days_overdue|pluralize }}</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Fine Amount</p>
+                                <p class="text-lg font-bold">{{ fine_amount }} MVR</p>
+                            </div>
+                                                         <div>
+                                 <p class="font-semibold">Fine Breakdown</p>
+                                 <div class="text-xs">
+                                     {% if fine_breakdown.tier1_days > 0 %}
+                                         {{ fine_breakdown.tier1_days }} day{{ fine_breakdown.tier1_days|pluralize }} × {{ fine_breakdown.tier1_rate }} MVR = {{ fine_breakdown.tier1_amount }} MVR<br>
+                                     {% endif %}
+                                     {% if fine_breakdown.tier2_days > 0 %}
+                                         {{ fine_breakdown.tier2_days }} day{{ fine_breakdown.tier2_days|pluralize }} × {{ fine_breakdown.tier2_rate }} MVR = {{ fine_breakdown.tier2_amount }} MVR<br>
+                                     {% endif %}
+                                     {% if fine_breakdown.tier3_days > 0 %}
+                                         {{ fine_breakdown.tier3_days }} day{{ fine_breakdown.tier3_days|pluralize }} × {{ fine_breakdown.tier3_rate }} MVR = {{ fine_breakdown.tier3_amount }} MVR<br>
+                                     {% endif %}
+                                     {% if fine_breakdown.tier2_days > 0 or fine_breakdown.tier3_days > 0 %}
+                                         <strong>Total: {{ fine_amount }} MVR</strong>
+                                     {% endif %}
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-green-800">On Time Return</h3>
+                    <p class="mt-1 text-sm text-green-700">No fine will be applied for this return.</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Important Notice -->
+    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h4 class="text-sm font-medium text-yellow-800">Please Note</h4>
+                <div class="mt-2 text-sm text-yellow-700">
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Ensure the book is in good condition before processing return</li>
+                        <li>{% if is_overdue %}A fine of {{ fine_amount }} MVR will be automatically added to the member's account{% else %}No fine will be applied for this on-time return{% endif %}</li>
+                        <li>The book will become available for other members immediately after return</li>
+                        <li>This action cannot be undone</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Actions -->
+<div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+    <form method="post" action="{% url 'borrow:process_book_return' borrowing.id %}" class="inline">
+        {% csrf_token %}
+        <button type="submit" 
+                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+            {% if is_overdue %}
+                Process Return & Apply Fine
+            {% else %}
+                Process Return
+            {% endif %}
+        </button>
+    </form>
+    <button type="button" 
+            onclick="closeReturnModal()" 
+            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+        Cancel
+    </button>
+</div> 

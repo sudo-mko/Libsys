@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+{% endblock header %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Page header banner -->
+    <div class="bg-gradient-to-r from-green-600 to-green-700 rounded-lg shadow-lg mb-6">
+        <div class="px-6 py-8">
+            <h1 class="text-3xl font-bold text-white">Active Borrowings & Returns</h1>
+            <p class="text-green-100 mt-2">Manage book returns and process overdue fines</p>
+        </div>
+    </div>
+
+    <!-- Navigation links -->
+    <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div class="flex flex-wrap gap-3">
+            <a href="{% url 'borrow:pending_requests_list' %}" 
+               class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 font-medium">
+                Pending Requests
+            </a>
+            <a href="{% url 'borrow:pickup_code_entry' %}" 
+               class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium">
+                Code Entry & Pickup
+            </a>
+            <a href="{% url 'borrow:active_borrowings_list' %}" 
+               class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium">
+                Active Borrowings & Returns
+            </a>
+            <a href="{% url 'borrow:extension_requests_list' %}" 
+               class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 font-medium">
+                Extension Requests
+            </a>
+        </div>
+    </div>
+
+    <!-- Search functionality -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Search Active Borrowings</h3>
+        
+        <form method="GET" class="flex flex-col md:flex-row gap-4">
+            <div class="flex-1">
+                <input type="text" 
+                       name="search" 
+                       value="{{ search_query }}"
+                       placeholder="Search by member name, book title, author, or ISBN..."
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            </div>
+            
+            <div>
+                <select name="search_type" 
+                        class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    <option value="all" {% if search_type == 'all' %}selected{% endif %}>All Fields</option>
+                    <option value="member" {% if search_type == 'member' %}selected{% endif %}>Member Name</option>
+                    <option value="book" {% if search_type == 'book' %}selected{% endif %}>Book Title/Author</option>
+                    <option value="isbn" {% if search_type == 'isbn' %}selected{% endif %}>ISBN</option>
+                </select>
+            </div>
+            
+            <div>
+                <button type="submit" 
+                        class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md">
+                    Search
+                </button>
+                {% if search_query %}
+                    <a href="{% url 'borrow:active_borrowings_list' %}" 
+                       class="ml-2 px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white font-medium rounded-md">
+                        Clear
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Summary stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow-sm p-4">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-500">Total Active</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ total_active }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-sm p-4">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                        <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-500">Overdue</p>
+                    <p class="text-2xl font-semibold text-red-600">{{ overdue_count }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm p-4">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-500">On Time</p>
+                    <p class="text-2xl font-semibold text-green-600">{{ total_active|add:"-"|add:overdue_count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active borrowings table -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        {% if active_borrowings %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Book</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Borrowed Date</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for borrowing in active_borrowings %}
+                        <tr class="hover:bg-gray-50 {% if borrowing.is_overdue %}bg-red-50{% endif %}">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10">
+                                        <div class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                            <span class="text-gray-500 font-medium text-sm">{{ borrowing.user.first_name|first }}{{ borrowing.user.last_name|first }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ borrowing.user.get_full_name }}</div>
+                                        <div class="text-sm text-gray-500">{{ borrowing.user.username }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    {% if borrowing.book.cover %}
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <img class="h-10 w-10 rounded object-cover" src="{{ borrowing.book.cover.url }}" alt="{{ borrowing.book.title }}">
+                                        </div>
+                                    {% else %}
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <div class="h-10 w-10 rounded bg-gray-100 flex items-center justify-center">
+                                                <span class="text-gray-500 font-medium text-sm">📚</span>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ borrowing.book.title }}</div>
+                                        <div class="text-sm text-gray-500">{{ borrowing.book.author }}</div>
+                                        {% if borrowing.book.isbn %}
+                                            <div class="text-xs text-gray-400">ISBN: {{ borrowing.book.isbn }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ borrowing.borrow_date|date:"M j, Y" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ borrowing.due_date|date:"M j, Y" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if borrowing.is_overdue %}
+                                    <div>
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                            {{ borrowing.days_overdue }} day{{ borrowing.days_overdue|pluralize }} overdue
+                                        </span>
+                                        <div class="text-xs text-red-600 mt-1">Fine: {{ borrowing.potential_fine }} MVR</div>
+                                    </div>
+                                {% else %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                        Borrowed
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button hx-get="{% url 'borrow:return_confirmation' borrowing.id %}" 
+                                        hx-target="#returnConfirmationModal" 
+                                        hx-swap="innerHTML"
+                                        onclick="document.getElementById('returnModal').classList.remove('hidden')"
+                                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-medium">
+                                    Process Return
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="px-6 py-8 text-center">
+                <div class="text-gray-500 mb-4">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No Active Borrowings</h3>
+                <p class="text-sm text-gray-500">
+                    {% if search_query %}
+                        No borrowings found matching your search criteria.
+                    {% else %}
+                        All books have been returned or no books are currently borrowed.
+                    {% endif %}
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Return Confirmation Modal -->
+<div id="returnModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div id="returnConfirmationModal">
+            <!-- Modal content will be loaded here via HTMX -->
+        </div>
+    </div>
+</div>
+
+<script>
+function closeReturnModal() {
+    document.getElementById('returnModal').classList.add('hidden');
+}
+
+// Close modal when clicking outside
+document.getElementById('returnModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeReturnModal();
+    }
+});
+</script>
+{% endblock %} 

@@ -23,12 +23,16 @@ def book_detail(request, book_id):
     book_available = True
     
     if request.user.is_authenticated:
-        # Check if current user has borrowed this book
-        user_borrowed = Borrowing.objects.filter( # type: ignore
+        # Check if current user has any active request/borrowing for this book
+        user_borrowing_status = Borrowing.objects.filter( # type: ignore
             user=request.user, 
             book=book, 
-            status__in=['borrowed', 'overdue']
-        ).exists()
+            status__in=['pending', 'approved', 'borrowed', 'overdue']
+        ).first()
+        
+        user_borrowed = user_borrowing_status and user_borrowing_status.status in ['borrowed', 'overdue']
+        user_has_pending = user_borrowing_status and user_borrowing_status.status == 'pending'
+        user_has_approved = user_borrowing_status and user_borrowing_status.status == 'approved'
         
         # Check if book is available (not borrowed by anyone)
         book_available = not Borrowing.objects.filter( # type: ignore
@@ -44,10 +48,19 @@ def book_detail(request, book_id):
             book=book,
             status__in=['pending', 'confirmed']
         ).exists()
+    else:
+        user_borrowed = False
+        user_has_pending = False 
+        user_has_approved = False
+        user_borrowing_status = None
+        user_has_reservation = False
     
     context = {
         'book': book,
         'user_borrowed': user_borrowed,
+        'user_has_pending': user_has_pending,
+        'user_has_approved': user_has_approved,
+        'user_borrowing_status': user_borrowing_status,
         'book_available': book_available,
         'user_has_reservation': user_has_reservation,
         'is_member': request.user.is_authenticated and request.user.role == 'member'

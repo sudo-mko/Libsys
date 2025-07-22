@@ -72,6 +72,10 @@
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                                         Approved - Ready for Pickup
                                     </span>
+                                {% elif borrowing.calculated_status == 'rejected' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        Request Rejected
+                                    </span>
                                 {% elif borrowing.calculated_status == 'expired' %}
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                                         Pickup Code Expired
@@ -142,6 +146,24 @@
                                             {% else %}
                                                 <div class="text-red-600 text-xs">Code expires today</div>
                                             {% endif %}
+                                        {% endif %}
+                                    </div>
+                                {% elif borrowing.calculated_status == 'rejected' %}
+                                    <div class="text-red-600">
+                                        <div class="font-medium flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                            Request rejected
+                                        </div>
+                                        {% if borrowing.rejected_date %}
+                                            <div class="text-xs text-gray-500 mt-1">{{ borrowing.rejected_date|date:"M j, Y" }}</div>
+                                        {% endif %}
+                                        {% if borrowing.rejected_by %}
+                                            <div class="text-xs text-gray-500">by {{ borrowing.rejected_by.get_full_name|default:borrowing.rejected_by.username }}</div>
+                                        {% endif %}
+                                        {% if borrowing.rejection_reason %}
+                                            <div class="text-xs text-red-500 mt-1 italic">"{{ borrowing.rejection_reason }}"</div>
                                         {% endif %}
                                     </div>
                                 {% elif borrowing.calculated_status == 'expired' %}

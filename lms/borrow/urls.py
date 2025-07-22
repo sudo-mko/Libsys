@@ -19,6 +19,11 @@ urlpatterns = [
     path('reject-request/<int:borrowing_id>/', views.reject_borrowing_request, name='reject_borrowing_request'),
     path('pickup-code-entry/', views.pickup_code_entry, name='pickup_code_entry'),
     path('cancel-request/<int:borrowing_id>/', views.cancel_borrowing_request, name='cancel_borrowing_request'),
+    
+    # Book return system URLs
+    path('active-borrowings/', views.active_borrowings_list, name='active_borrowings_list'),
+    path('return-book/<int:borrowing_id>/', views.process_book_return, name='process_book_return'),
+    path('return-confirmation/<int:borrowing_id>/', views.return_confirmation, name='return_confirmation'),
 ]
 
 

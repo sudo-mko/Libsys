@@ -32,15 +32,20 @@ def borrow_book(request, book_id):
         messages.error(request, "You need to have a membership to borrow books. Please contact a librarian.")
         return redirect('library:book_detail', book_id=book_id)
     
-    # Check if user has already borrowed this book and not returned it
+    # Check if user has already borrowed this book or has pending/approved request
     existing_borrowing = Borrowing.objects.filter( # type: ignore
         user=request.user, 
         book=book, 
-        status__in=['borrowed', 'overdue']
+        status__in=['pending', 'approved', 'borrowed', 'overdue']
     ).first()
     
     if existing_borrowing:
-        messages.error(request, "You have already borrowed this book.")
+        if existing_borrowing.status == 'pending':
+            messages.error(request, "You already have a pending borrowing request for this book.")
+        elif existing_borrowing.status == 'approved':
+            messages.error(request, "You already have an approved borrowing request for this book. Please pick it up using your code.")
+        else:
+            messages.error(request, "You have already borrowed this book.")
         return redirect('library:book_detail', book_id=book_id)
     
     # Check if book is already borrowed by someone else (only check actual borrowed status, not pending/approved)
@@ -97,6 +102,8 @@ def borrowing_history(request):
         # Handle different status types
         if borrowing.status == 'pending':
             enhanced_borrowing.calculated_status = 'pending'
+        elif borrowing.status == 'rejected':
+            enhanced_borrowing.calculated_status = 'rejected'
         elif borrowing.status == 'approved':
             # Check if code has expired
             if borrowing.is_code_expired():
@@ -317,7 +324,7 @@ def approve_borrowing_request(request, borrowing_id):
     return redirect('borrow:pending_requests_list')
 
 
-@login_required
+@login_required  
 @require_POST
 @csrf_protect
 def reject_borrowing_request(request, borrowing_id):
@@ -333,12 +340,18 @@ def reject_borrowing_request(request, borrowing_id):
         messages.error(request, "Only pending requests can be rejected.")
         return redirect('borrow:pending_requests_list')
     
-    # Delete the borrowing request (since it was never actually borrowed)
-    book_title = borrowing.book.title
-    username = borrowing.user.username
-    borrowing.delete()
+    # Get optional rejection reason
+    rejection_reason = request.POST.get('rejection_reason', '').strip()
     
-    messages.success(request, f"Request rejected for {username} - {book_title}")
+    # Update borrowing status to rejected instead of deleting
+    borrowing.status = 'rejected'
+    borrowing.rejected_date = timezone.now()
+    borrowing.rejected_by = request.user
+    if rejection_reason:
+        borrowing.rejection_reason = rejection_reason
+    borrowing.save()
+    
+    messages.success(request, f"Request rejected for {borrowing.user.username} - {borrowing.book.title}")
     return redirect('borrow:pending_requests_list')
 
 
@@ -429,3 +442,216 @@ def cleanup_expired_codes():
     expired_borrowings.update(status='expired')
     
     return count
+
+
+@login_required
+def active_borrowings_list(request):
+    """View for librarians to see all active borrowings and process returns"""
+    # Check if user is librarian or admin
+    if request.user.role not in ['librarian', 'admin']:
+        messages.error(request, "Access denied. Only librarians and admins can access this page.")
+        return redirect('library:home')
+    
+    # Get search parameters
+    search_query = request.GET.get('search', '').strip()
+    search_type = request.GET.get('search_type', 'all')  # all, member, book, isbn
+    
+    # Base queryset - all active borrowings
+    active_borrowings = Borrowing.objects.filter( # type: ignore
+        status__in=['borrowed', 'overdue']
+    ).select_related('user', 'book').order_by('-borrow_date')
+    
+    # Apply search filters
+    if search_query:
+        if search_type == 'member':
+            active_borrowings = active_borrowings.filter(
+                user__username__icontains=search_query
+            ) | active_borrowings.filter(
+                user__first_name__icontains=search_query
+            ) | active_borrowings.filter(
+                user__last_name__icontains=search_query
+            )
+        elif search_type == 'book':
+            active_borrowings = active_borrowings.filter(
+                book__title__icontains=search_query
+            ) | active_borrowings.filter(
+                book__author__icontains=search_query
+            )
+        elif search_type == 'isbn':
+            active_borrowings = active_borrowings.filter(
+                book__isbn__icontains=search_query
+            )
+        else:  # search_type == 'all'
+            active_borrowings = active_borrowings.filter(
+                user__username__icontains=search_query
+            ) | active_borrowings.filter(
+                user__first_name__icontains=search_query
+            ) | active_borrowings.filter(
+                user__last_name__icontains=search_query
+            ) | active_borrowings.filter(
+                book__title__icontains=search_query
+            ) | active_borrowings.filter(
+                book__author__icontains=search_query
+            ) | active_borrowings.filter(
+                book__isbn__icontains=search_query
+            )
+    
+    # Calculate overdue info and potential fines for each borrowing
+    today = timezone.now().date()
+    enhanced_borrowings = []
+    
+    for borrowing in active_borrowings:
+        enhanced_borrowing = borrowing
+        
+        # Calculate days overdue
+        days_overdue = (today - borrowing.due_date).days
+        enhanced_borrowing.days_overdue = max(0, days_overdue)
+        enhanced_borrowing.is_overdue = days_overdue > 0
+        
+        # Calculate potential fine if returned today
+        if enhanced_borrowing.is_overdue:
+            from fines.models import Fine
+            enhanced_borrowing.potential_fine = Fine.calculate_overdue_fine(days_overdue)
+        else:
+            enhanced_borrowing.potential_fine = 0
+        
+        enhanced_borrowings.append(enhanced_borrowing)
+    
+    context = {
+        'active_borrowings': enhanced_borrowings,
+        'search_query': search_query,
+        'search_type': search_type,
+        'total_active': len(enhanced_borrowings),
+        'overdue_count': sum(1 for b in enhanced_borrowings if b.is_overdue),
+    }
+    
+    return render(request, 'active_borrowings_list.html', context)
+
+
+@login_required
+@require_POST
+@csrf_protect
+def process_book_return(request, borrowing_id):
+    """Process book return with fine calculation if overdue"""
+    # Check if user is librarian or admin
+    if request.user.role not in ['librarian', 'admin']:
+        messages.error(request, "Access denied.")
+        return redirect('library:home')
+    
+    borrowing = get_object_or_404(Borrowing, id=borrowing_id)
+    
+    # Check if book is actually borrowed
+    if borrowing.status not in ['borrowed', 'overdue']:
+        messages.error(request, "This book is not currently borrowed.")
+        return redirect('borrow:active_borrowings_list')
+    
+    # Calculate overdue days
+    today = timezone.now().date()
+    days_overdue = (today - borrowing.due_date).days
+    
+    # Process return
+    borrowing.status = 'returned'
+    borrowing.return_date = today
+    borrowing.save()
+    
+    # Create fine if overdue
+    fine_created = False
+    if days_overdue > 0:
+        from fines.models import Fine
+        fine_amount = Fine.calculate_overdue_fine(days_overdue)
+        
+        # Check if fine already exists to avoid duplicates
+        existing_fine = Fine.objects.filter(borrowing=borrowing, fine_type='overdue').first()
+        if not existing_fine:
+            Fine.objects.create(
+                borrowing=borrowing,
+                amount=fine_amount,
+                days_overdue=days_overdue,
+                fine_type='overdue',
+                paid=False
+            )
+            fine_created = True
+    
+    # Success message
+    if fine_created:
+        messages.success(request, 
+            f"Book returned successfully! Fine of {Fine.calculate_overdue_fine(days_overdue)} MVR "
+            f"has been applied for {days_overdue} day(s) overdue.")
+    else:
+        messages.success(request, f"Book '{borrowing.book.title}' returned successfully!")
+    
+    return redirect('borrow:active_borrowings_list')
+
+
+@login_required
+def return_confirmation(request, borrowing_id):
+    """Show return confirmation modal with fine details"""
+    # Check if user is librarian or admin
+    if request.user.role not in ['librarian', 'admin']:
+        return HttpResponse('<div class="text-red-600">Access denied.</div>')
+    
+    borrowing = get_object_or_404(Borrowing, id=borrowing_id)
+    
+    # Calculate overdue info
+    today = timezone.now().date()
+    days_overdue = max(0, (today - borrowing.due_date).days)
+    is_overdue = days_overdue > 0
+    
+    # Calculate fine if overdue
+    fine_amount = 0
+    fine_breakdown = {}
+    if is_overdue:
+        from fines.models import Fine
+        fine_amount = Fine.calculate_overdue_fine(days_overdue)
+        
+        # Calculate fine breakdown for display
+        if days_overdue <= 3:
+            fine_breakdown = {
+                'tier1_days': days_overdue,
+                'tier1_rate': 2,
+                'tier1_amount': days_overdue * 2,
+                'tier2_days': 0,
+                'tier2_amount': 0,
+                'tier3_days': 0,
+                'tier3_amount': 0,
+            }
+        elif days_overdue <= 7:
+            tier2_days = days_overdue - 3
+            fine_breakdown = {
+                'tier1_days': 3,
+                'tier1_rate': 2,
+                'tier1_amount': 6,
+                'tier2_days': tier2_days,
+                'tier2_rate': 5,
+                'tier2_amount': tier2_days * 5,
+                'tier3_days': 0,
+                'tier3_amount': 0,
+            }
+        else:
+            tier3_days = days_overdue - 7
+            fine_breakdown = {
+                'tier1_days': 3,
+                'tier1_rate': 2,
+                'tier1_amount': 6,
+                'tier2_days': 4,
+                'tier2_rate': 5,
+                'tier2_amount': 20,
+                'tier3_days': tier3_days,
+                'tier3_rate': 10,
+                'tier3_amount': tier3_days * 10,
+            }
+    
+    context = {
+        'borrowing': borrowing,
+        'days_overdue': days_overdue,
+        'is_overdue': is_overdue,
+        'fine_amount': fine_amount,
+        'fine_breakdown': fine_breakdown,
+    }
+    
+    # If it's an HTMX request, return just the modal content
+    if request.headers.get('HX-Request'):
+        return render(request, 'return_confirmation_modal.html', context)
+    
+    # For regular requests, redirect to active borrowings (fallback)
+    return redirect('borrow:active_borrowings_list')

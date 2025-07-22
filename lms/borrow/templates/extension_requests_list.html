@@ -23,6 +23,28 @@
         </div>
     </div>
 
+    <!-- Navigation links -->
+    <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div class="flex flex-wrap gap-3">
+            <a href="{% url 'borrow:pending_requests_list' %}" 
+               class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 font-medium">
+                Pending Requests
+            </a>
+            <a href="{% url 'borrow:pickup_code_entry' %}" 
+               class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium">
+                Code Entry & Pickup
+            </a>
+            <a href="{% url 'borrow:active_borrowings_list' %}" 
+               class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium">
+                Active Borrowings & Returns
+            </a>
+            <a href="{% url 'borrow:extension_requests_list' %}" 
+               class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 font-medium">
+                Extension Requests
+            </a>
+        </div>
+    </div>
+
     <!-- Extension requests table -->
     <div class="bg-white rounded-lg shadow-sm overflow-hidden">
         {% if extension_requests %}

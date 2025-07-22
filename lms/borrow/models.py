@@ -9,6 +9,7 @@ class Borrowing(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
         ('borrowed', 'Borrowed'),
         ('returned', 'Returned'),
         ('overdue', 'Overdue'),
@@ -25,6 +26,9 @@ class Borrowing(models.Model):
     pickup_code = models.CharField(max_length=10, null=True, blank=True, unique=True)
     approved_date = models.DateTimeField(null=True, blank=True)
     pickup_date = models.DateTimeField(null=True, blank=True)  # When librarian confirms pickup
+    rejected_date = models.DateTimeField(null=True, blank=True)
+    rejected_by = models.ForeignKey('users.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='rejected_borrowings')
+    rejection_reason = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f"{str(self.user)} - {str(self.book)}"
