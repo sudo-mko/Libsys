@@ -1,0 +1,294 @@
+[
+  { "model": "library.author", "pk": 1, "fields": { "name": "Isaac Asimov" } },
+  {
+    "model": "library.author",
+    "pk": 2,
+    "fields": { "name": "Agatha Christie" }
+  },
+  { "model": "library.author", "pk": 3, "fields": { "name": "J.K. Rowling" } },
+  {
+    "model": "library.category",
+    "pk": 1,
+    "fields": { "category_name": "Science Fiction" }
+  },
+  {
+    "model": "library.category",
+    "pk": 2,
+    "fields": { "category_name": "Mystery" }
+  },
+  {
+    "model": "library.category",
+    "pk": 3,
+    "fields": { "category_name": "Fantasy" }
+  },
+  {
+    "model": "branches.branch",
+    "pk": 1,
+    "fields": { "branch_name": "Central Library", "location": "Downtown" }
+  },
+  {
+    "model": "branches.branch",
+    "pk": 2,
+    "fields": { "branch_name": "West End Branch", "location": "West City" }
+  },
+  {
+    "model": "branches.branch",
+    "pk": 3,
+    "fields": { "branch_name": "East Side Branch", "location": "East City" }
+  },
+  {
+    "model": "library.book",
+    "pk": 1,
+    "fields": {
+      "title": "The Foundation",
+      "author": 1,
+      "category": 1,
+      "isbn": "9781234567890",
+      "publication_date": "1951-06-01",
+      "branch": 1,
+      "edition": 1,
+      "description": "A classic science fiction novel.",
+      "cover": "book_covers/Beige And Black Simple Science Fiction Book Cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 2,
+    "fields": {
+      "title": "Murder on the Orient Express",
+      "author": 2,
+      "category": 2,
+      "isbn": "9781234567891",
+      "publication_date": "1934-01-01",
+      "branch": 2,
+      "edition": 1,
+      "description": "A masterpiece of mystery fiction.",
+      "cover": "book_covers/Black and Blue Dystopian Sci-Fi Novel Book Cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 3,
+    "fields": {
+      "title": "Harry Potter and the Sorcerer's Stone",
+      "author": 3,
+      "category": 3,
+      "isbn": "9781234567892",
+      "publication_date": "1997-06-26",
+      "branch": 3,
+      "edition": 1,
+      "description": "A magical fantasy adventure.",
+      "cover": "book_covers/Brown and White Thriller Book Cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 4,
+    "fields": {
+      "title": "Galaxy Outlaws",
+      "author": 1,
+      "category": 1,
+      "isbn": "9781234567893",
+      "publication_date": "1960-08-15",
+      "branch": 1,
+      "edition": 2,
+      "description": "Intergalactic adventures await.",
+      "cover": "book_covers/Dark Blue and White Bold and Minimalist Outer Space Teen Fiction Wattpad Book Cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 5,
+    "fields": {
+      "title": "The Double Exposure",
+      "author": 2,
+      "category": 2,
+      "isbn": "9781234567894",
+      "publication_date": "1945-03-10",
+      "branch": 2,
+      "edition": 1,
+      "description": "A thrilling mystery.",
+      "cover": "book_covers/Double exposure artistic background novel book cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 6,
+    "fields": {
+      "title": "Neon Skies",
+      "author": 1,
+      "category": 1,
+      "isbn": "9781234567895",
+      "publication_date": "1972-11-04",
+      "branch": 1,
+      "edition": 1,
+      "description": "Futuristic science fiction.",
+      "cover": "book_covers/Pink Neon Science Fiction Book Cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 7,
+    "fields": {
+      "title": "Path of Shadows",
+      "author": 3,
+      "category": 3,
+      "isbn": "9781234567896",
+      "publication_date": "2001-09-15",
+      "branch": 3,
+      "edition": 1,
+      "description": "A journey through darkness.",
+      "cover": "book_covers/Purple and  Dark Blue The Path Of Shadows eBook Cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 8,
+    "fields": {
+      "title": "Haunted Manor",
+      "author": 2,
+      "category": 2,
+      "isbn": "9781234567897",
+      "publication_date": "1980-10-31",
+      "branch": 2,
+      "edition": 1,
+      "description": "A horror mystery.",
+      "cover": "book_covers/Red Black Illustrated Haunted Manor Horror Novel Book Cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 9,
+    "fields": {
+      "title": "Red Modern",
+      "author": 1,
+      "category": 1,
+      "isbn": "9781234567898",
+      "publication_date": "1965-07-20",
+      "branch": 1,
+      "edition": 1,
+      "description": "Modern science fiction.",
+      "cover": "book_covers/Red Modern Science Fiction Book Cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 10,
+    "fields": {
+      "title": "Double Exposure Mystery",
+      "author": 2,
+      "category": 2,
+      "isbn": "9781234567899",
+      "publication_date": "1955-04-18",
+      "branch": 2,
+      "edition": 1,
+      "description": "A mysterious thriller.",
+      "cover": "book_covers/Red and Blue Green Double Exposure Mystery Novel Book Cover .png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 11,
+    "fields": {
+      "title": "Forest Ebook",
+      "author": 3,
+      "category": 3,
+      "isbn": "9781234567800",
+      "publication_date": "2005-02-10",
+      "branch": 3,
+      "edition": 1,
+      "description": "A tale in the woods.",
+      "cover": "book_covers/White Green Minimalist Simple Photo Forest Ebook Cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 12,
+    "fields": {
+      "title": "Yellow Fantasy",
+      "author": 3,
+      "category": 3,
+      "isbn": "9781234567801",
+      "publication_date": "2010-12-24",
+      "branch": 3,
+      "edition": 1,
+      "description": "A fantasy adventure.",
+      "cover": "book_covers/Yellow Fantasy Novel Book Cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 13,
+    "fields": {
+      "title": "Conquest of Flames",
+      "author": 1,
+      "category": 1,
+      "isbn": "9781234567802",
+      "publication_date": "1988-07-11",
+      "branch": 1,
+      "edition": 1,
+      "description": "Epic battles and fire.",
+      "cover": "book_covers/conquest of flames.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 14,
+    "fields": {
+      "title": "Just the Two of Us",
+      "author": 2,
+      "category": 2,
+      "isbn": "9781234567803",
+      "publication_date": "1992-03-05",
+      "branch": 2,
+      "edition": 1,
+      "description": "A heartfelt mystery.",
+      "cover": "book_covers/just the two of us.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 15,
+    "fields": {
+      "title": "The Lost Kingdom",
+      "author": 3,
+      "category": 3,
+      "isbn": "9781234567804",
+      "publication_date": "2015-05-22",
+      "branch": 3,
+      "edition": 1,
+      "description": "Lost lands and magic.",
+      "cover": "book_covers/the lost kingdom.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 16,
+    "fields": {
+      "title": "The Story of the Boy",
+      "author": 2,
+      "category": 2,
+      "isbn": "9781234567805",
+      "publication_date": "2007-08-19",
+      "branch": 2,
+      "edition": 1,
+      "description": "A coming-of-age tale.",
+      "cover": "book_covers/the story of the boy.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 17,
+    "fields": {
+      "title": "The Dancer",
+      "author": 3,
+      "category": 3,
+      "isbn": "9781234567806",
+      "publication_date": "2018-04-29",
+      "branch": 3,
+      "edition": 1,
+      "description": "A dance through life.",
+      "cover": "book_covers/thedancer.png"
+    }
+  }
+]
