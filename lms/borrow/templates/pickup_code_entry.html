@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block header %}
+{% endblock header %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Page header banner -->
+    <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-lg mb-6">
+        <div class="px-6 py-8">
+            <h1 class="text-3xl font-bold text-white">Book Pickup - Code Entry</h1>
+            <p class="text-blue-100 mt-2">Enter the member's pickup code to complete borrowing</p>
+        </div>
+    </div>
+
+    <!-- Navigation links -->
+    <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div class="flex space-x-4">
+            <a href="{% url 'borrow:pending_requests_list' %}" 
+               class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 font-medium">
+                Pending Requests
+            </a>
+            <a href="{% url 'borrow:pickup_code_entry' %}" 
+               class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium">
+                Code Entry & Pickup
+            </a>
+            <a href="{% url 'borrow:extension_requests_list' %}" 
+               class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 font-medium">
+                Extension Requests
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Code Entry Form -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Enter Pickup Code</h3>
+            
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="pickup_code" class="block text-sm font-medium text-gray-700 mb-2">
+                        10-Character Pickup Code
+                    </label>
+                    <input type="text" 
+                           id="pickup_code" 
+                           name="pickup_code" 
+                           maxlength="10"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-lg uppercase"
+                           placeholder="e.g. ABC123XYZ9"
+                           autocomplete="off"
+                           required>
+                </div>
+                
+                <button type="submit" 
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md">
+                    Process Pickup Code
+                </button>
+            </form>
+        </div>
+
+        <!-- Information Panel -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">How It Works</h3>
+            
+            <div class="space-y-4 text-sm text-gray-600">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span class="text-blue-600 font-bold text-sm">1</span>
+                        </div>
+                    </div>
+                    <div class="ml-3">
+                        <p><strong>Member shows code:</strong> The member shows their 10-character pickup code</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span class="text-blue-600 font-bold text-sm">2</span>
+                        </div>
+                    </div>
+                    <div class="ml-3">
+                        <p><strong>Enter the code:</strong> Type the exact code in the field above</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span class="text-blue-600 font-bold text-sm">3</span>
+                        </div>
+                    </div>
+                    <div class="ml-3">
+                        <p><strong>Complete borrowing:</strong> System validates code and completes the borrowing process</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h4 class="text-sm font-medium text-yellow-800">Important Notes</h4>
+                        <div class="mt-2 text-sm text-yellow-700">
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Pickup codes expire 3 days after approval</li>
+                                <li>Codes are case-insensitive (automatically converted to uppercase)</li>
+                                <li>Each code can only be used once</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Display -->
+    {% if success_borrowing %}
+    <div class="mt-6 bg-green-50 border border-green-200 rounded-md p-6">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-green-800">Book Successfully Checked Out!</h3>
+                <div class="mt-2 text-sm text-green-700">
+                    <div class="bg-white p-4 rounded-md border border-green-300">
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <strong>Member:</strong> {{ success_borrowing.user.get_full_name }}
+                            </div>
+                            <div>
+                                <strong>Book:</strong> {{ success_borrowing.book.title }}
+                            </div>
+                            <div>
+                                <strong>Due Date:</strong> {{ success_borrowing.due_date|date:"F j, Y" }}
+                            </div>
+                            <div>
+                                <strong>Loan Period:</strong> {{ success_borrowing.user.membership.loan_period_days }} days
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Auto-focus and uppercase script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const codeInput = document.getElementById('pickup_code');
+    codeInput.focus();
+    
+    codeInput.addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+    });
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block header %}
+{% endblock header %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Page header banner -->
+    <div class="bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg shadow-lg mb-6">
+        <div class="px-6 py-8">
+            <h1 class="text-3xl font-bold text-white">Pending Borrowing Requests</h1>
+            <p class="text-purple-100 mt-2">Review and approve member borrowing requests</p>
+        </div>
+    </div>
+
+    <!-- Navigation links -->
+    <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div class="flex space-x-4">
+            <a href="{% url 'borrow:pending_requests_list' %}" 
+               class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 font-medium">
+                Pending Requests
+            </a>
+            <a href="{% url 'borrow:pickup_code_entry' %}" 
+               class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium">
+                Code Entry & Pickup
+            </a>
+            <a href="{% url 'borrow:extension_requests_list' %}" 
+               class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 font-medium">
+                Extension Requests
+            </a>
+        </div>
+    </div>
+
+    <!-- Pending requests table -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        {% if pending_requests %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Book</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Request Date</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Membership</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for request in pending_requests %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10">
+                                        <div class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                            <span class="text-gray-500 font-medium text-sm">{{ request.user.first_name|first }}{{ request.user.last_name|first }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ request.user.get_full_name }}</div>
+                                        <div class="text-sm text-gray-500">{{ request.user.username }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    {% if request.book.cover %}
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <img class="h-10 w-10 rounded object-cover" src="{{ request.book.cover.url }}" alt="{{ request.book.title }}">
+                                        </div>
+                                    {% else %}
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <div class="h-10 w-10 rounded bg-gray-100 flex items-center justify-center">
+                                                <span class="text-gray-500 font-medium text-sm">📚</span>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ request.book.title }}</div>
+                                        <div class="text-sm text-gray-500">{{ request.book.author }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ request.borrow_date|date:"M j, Y" }}
+                                <div class="text-xs text-gray-400">Request submitted</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if request.user.membership %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        {{ request.user.membership.name }}
+                                    </span>
+                                    <div class="text-xs text-gray-500 mt-1">{{ request.user.membership.loan_period_days }} days loan</div>
+                                {% else %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        No Membership
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                <form method="post" action="{% url 'borrow:approve_borrowing_request' request.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" 
+                                            onclick="return confirm('Approve this borrowing request? A pickup code will be generated.')"
+                                            class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-medium">
+                                        Approve
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'borrow:reject_borrowing_request' request.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" 
+                                            onclick="return confirm('Reject this borrowing request? This action cannot be undone.')"
+                                            class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-medium">
+                                        Reject
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="px-6 py-8 text-center">
+                <div class="text-gray-500 mb-4">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No Pending Requests</h3>
+                <p class="text-sm text-gray-500">All borrowing requests have been processed.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

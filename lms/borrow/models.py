@@ -1,11 +1,18 @@
 from django.db import models
+import string
+import random
+from django.utils import timezone
+from datetime import timedelta
 
 # Create your models here.
 class Borrowing(models.Model):
     STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
         ('borrowed', 'Borrowed'),
         ('returned', 'Returned'),
         ('overdue', 'Overdue'),
+        ('expired', 'Expired'),  # For expired pickup codes
     ]
 
     user = models.ForeignKey('users.User', on_delete=models.CASCADE)
@@ -13,12 +20,38 @@ class Borrowing(models.Model):
     borrow_date = models.DateField(auto_now_add=True)
     due_date = models.DateField()
     return_date = models.DateField(null=True, blank=True)
-    is_extended = models.BooleanField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
-
+    is_extended = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    pickup_code = models.CharField(max_length=10, null=True, blank=True, unique=True)
+    approved_date = models.DateTimeField(null=True, blank=True)
+    pickup_date = models.DateTimeField(null=True, blank=True)  # When librarian confirms pickup
 
     def __str__(self):
         return f"{str(self.user)} - {str(self.book)}"
+
+    def generate_pickup_code(self):
+        """Generate a unique 10-character alphanumeric pickup code"""
+        while True:
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+            if not Borrowing.objects.filter(pickup_code=code).exists():
+                self.pickup_code = code
+                break
+        return self.pickup_code
+
+    def is_code_expired(self):
+        """Check if the pickup code has expired (3 days after approval)"""
+        if not self.approved_date:
+            return False
+        expiration_date = self.approved_date + timedelta(days=3)
+        return timezone.now() > expiration_date
+
+    def days_until_code_expiry(self):
+        """Calculate days until code expires"""
+        if not self.approved_date:
+            return None
+        expiration_date = self.approved_date + timedelta(days=3)
+        days_left = (expiration_date - timezone.now()).days
+        return max(0, days_left)  # Don't return negative days
 
 
 

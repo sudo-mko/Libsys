@@ -64,7 +64,19 @@
                                 {% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                {% if borrowing.calculated_status == 'returned' %}
+                                {% if borrowing.calculated_status == 'pending' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        Pending Approval
+                                    </span>
+                                {% elif borrowing.calculated_status == 'approved' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                        Approved - Ready for Pickup
+                                    </span>
+                                {% elif borrowing.calculated_status == 'expired' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        Pickup Code Expired
+                                    </span>
+                                {% elif borrowing.calculated_status == 'returned' %}
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                         Returned
                                     </span>
@@ -107,7 +119,39 @@
                                 {% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                {% if borrowing.calculated_status in 'borrowed,due_soon,due_today,overdue' %}
+                                {% if borrowing.calculated_status == 'pending' %}
+                                    <form method="post" action="{% url 'borrow:cancel_borrowing_request' borrowing.id %}" class="inline">
+                                        {% csrf_token %}
+                                        <button type="submit" 
+                                                onclick="return confirm('Cancel this borrowing request?')"
+                                                class="text-red-600 hover:text-red-900 font-medium">
+                                            Cancel Request
+                                        </button>
+                                    </form>
+                                {% elif borrowing.calculated_status == 'approved' %}
+                                    <div class="space-y-2">
+                                        <div class="bg-blue-50 p-3 rounded-md border border-blue-200">
+                                            <div class="text-blue-900 font-bold text-lg font-mono">{{ borrowing.pickup_code }}</div>
+                                            <div class="text-blue-700 text-xs mt-1">Show this code to librarian</div>
+                                        </div>
+                                        {% if borrowing.days_until_expiry is not None %}
+                                            {% if borrowing.days_until_expiry > 0 %}
+                                                <div class="text-orange-600 text-xs">
+                                                    Code expires in {{ borrowing.days_until_expiry }} day{{ borrowing.days_until_expiry|pluralize }}
+                                                </div>
+                                            {% else %}
+                                                <div class="text-red-600 text-xs">Code expires today</div>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                {% elif borrowing.calculated_status == 'expired' %}
+                                    <span class="text-red-600 font-medium flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                        </svg>
+                                        Pickup code expired - Contact librarian
+                                    </span>
+                                {% elif borrowing.calculated_status in 'borrowed,due_soon,due_today,overdue' %}
                                     <!-- Check if user has premium membership and can extend -->
                                     {% if request.user.membership and request.user.membership.name|lower == 'premium' %}
                                         <!-- Check if already extended or has pending extension request -->

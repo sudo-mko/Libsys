@@ -85,6 +85,11 @@
                         <i class="fas fa-file-alt text-base mr-2 {% if request.path == '/borrowings/active/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"></i>
                         <span class="sidebar-text-item">Active Borrowings</span>
                     </a>
+                    
+                    <a href="{% url 'borrow:pending_requests_list' %}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/borrowings/pending/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white{% endif %} group">
+                        <i class="fas fa-clock text-base mr-2 {% if request.path == '/borrowings/pending/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"></i>
+                        <span class="sidebar-text-item">Pending Borrowings</span>
+                    </a>
 
                     <a href="{% url 'borrow:extension_requests_list' %}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/extension-requests/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white{% endif %} group">
                         <i class="fas fa-clock text-base mr-2 {% if request.path == '/extension-requests/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"></i>

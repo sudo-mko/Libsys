@@ -12,6 +12,13 @@ urlpatterns = [
     path('approve-extension-confirm/<int:extension_id>/', views.approve_extension_confirm, name='approve_extension_confirm'),
     path('approve-extension/<int:extension_id>/', views.approve_extension, name='approve_extension'),
     path('reject-extension/<int:extension_id>/', views.reject_extension, name='reject_extension'),
+    
+    # New borrowing workflow URLs
+    path('pending-requests/', views.pending_requests_list, name='pending_requests_list'),
+    path('approve-request/<int:borrowing_id>/', views.approve_borrowing_request, name='approve_borrowing_request'),
+    path('reject-request/<int:borrowing_id>/', views.reject_borrowing_request, name='reject_borrowing_request'),
+    path('pickup-code-entry/', views.pickup_code_entry, name='pickup_code_entry'),
+    path('cancel-request/<int:borrowing_id>/', views.cancel_borrowing_request, name='cancel_borrowing_request'),
 ]
 
 
