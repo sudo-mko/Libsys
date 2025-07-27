@@ -38,7 +38,20 @@
 									<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
 										<i class="fas fa-search text-gray-400"></i>
 									</div>
-									<input class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-full leading-5 bg-gray-100 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Search books, members..." type="search">
+									<input 
+										id="search-input"
+										class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-full leading-5 bg-gray-100 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" 
+										placeholder="Search books..." 
+										type="search"
+										hx-get="{% url 'library:book_search' %}"
+										hx-trigger="keyup changed delay:300ms"
+										hx-target="#search-results"
+										hx-include="this"
+										name="q"
+										autocomplete="off">
+									
+									<!-- Search Results Container -->
+									<div id="search-results"></div>
 								</div>
 							</div>
 							
@@ -225,6 +238,44 @@
 				// User dropdown functionality could be added here
 				const userMenuButton = document.getElementById('user-menu-button');
 				// Implementation for user dropdown would go here
+				
+				// Search functionality
+				const searchInput = document.getElementById('search-input');
+				const searchResults = document.getElementById('search-results');
+				
+				if (searchInput && searchResults) {
+					// Clear results when input is empty
+					searchInput.addEventListener('input', function() {
+						if (this.value.trim() === '') {
+							searchResults.innerHTML = '';
+						}
+					});
+					
+					// Close dropdown when clicking outside
+					document.addEventListener('click', function(e) {
+						if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+							searchResults.innerHTML = '';
+						}
+					});
+					
+					// Close dropdown on escape key
+					searchInput.addEventListener('keydown', function(e) {
+						if (e.key === 'Escape') {
+							searchResults.innerHTML = '';
+							this.blur();
+						}
+					});
+					
+					// Clear results when input loses focus (optional)
+					searchInput.addEventListener('blur', function() {
+						// Small delay to allow clicking on results
+						setTimeout(() => {
+							if (!searchResults.matches(':hover')) {
+								searchResults.innerHTML = '';
+							}
+						}, 150);
+					});
+				}
 			});
 		</script>
 	</body>

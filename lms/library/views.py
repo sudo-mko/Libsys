@@ -6,6 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from borrow.models import Borrowing
 from reservations.models import Reservation
+from django.db.models import Q
+from django.http import JsonResponse
 
 # Create your views here.
 def index(request):
@@ -131,3 +133,25 @@ def book_delete(request, book_id):
     
     # For regular requests, redirect to book list (fallback)
     return redirect('library:book_add')
+
+def book_search(request):
+    """
+    Real-time search view for books using HTMX
+    Searches across title, author, category, description, and ISBN
+    """
+    query = request.GET.get('q', '').strip()
+    
+    if not query or len(query) < 2:
+        # Return empty results for queries less than 2 characters
+        return render(request, 'components/search_results.html', {'books': []})
+    
+    # Search across multiple fields using Q objects
+    search_results = Book.objects.filter( # type: ignore
+        Q(title__icontains=query) |
+        Q(author__name__icontains=query) |
+        Q(category__category_name__icontains=query) |
+        Q(description__icontains=query) |
+        Q(isbn__icontains=query)
+    ).select_related('author', 'category').distinct()[:8]  # Limit to top 8 results
+    
+    return render(request, 'components/search_results.html', {'books': search_results, 'query': query})
