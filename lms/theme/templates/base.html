@@ -59,10 +59,10 @@
 							<div class="ml-4 flex items-center md:ml-6 space-x-4">
 								<!-- Guest buttons (shown when not logged in) -->
 								<div class="{% if user.is_authenticated %}hidden{% endif %}">
-									<a href="{% url 'login' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+									<a href="{% url 'users:login' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
 										Login
 									</a>
-									<a href="{% url 'register' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+									<a href="{% url 'users:register' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
 										Sign up
 									</a>
 								</div>

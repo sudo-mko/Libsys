@@ -155,3 +155,108 @@ def book_search(request):
     ).select_related('author', 'category').distinct()[:8]  # Limit to top 8 results
     
     return render(request, 'components/search_results.html', {'books': search_results, 'query': query})
+
+
+@login_required
+def reports(request):
+    # Check if user has permission to view reports (manager or librarian)
+    if request.user.role not in ['manager', 'librarian']:
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden("You don't have permission to view reports.")
+    from users.models import User, MembershipType
+    from borrow.models import Borrowing
+    from reservations.models import Reservation
+    from fines.models import Fine
+    from django.db.models import Count, Sum, Case, When, DecimalField, Value
+    from decimal import Decimal
+    
+    # Total Books
+    total_books = Book.objects.count()
+    
+    # Total Members (users with role='member')
+    total_members = User.objects.filter(role='member').count()
+    
+    # Members by membership type
+    membership_stats = User.objects.filter(role='member').values(
+        'membership__name'
+    ).annotate(
+        count=Count('id')
+    ).order_by('membership__name')
+    
+    # Prepare membership data with fees
+    membership_breakdown = []
+    total_fees_collected = Decimal('0.00')
+    
+    # Define annual fees
+    annual_fees = {
+        'Premium Member': Decimal('750.00'),
+        'Basic Member': Decimal('500.00'), 
+        'Student Member': Decimal('300.00')
+    }
+    
+    for stat in membership_stats:
+        membership_name = stat['membership__name']
+        count = stat['count']
+        
+        if membership_name in annual_fees:
+            annual_fee = annual_fees[membership_name]
+            total_fee = annual_fee * count
+            total_fees_collected += total_fee
+            
+            membership_breakdown.append({
+                'name': membership_name,
+                'count': count,
+                'annual_fee': annual_fee,
+                'total_fee': total_fee
+            })
+    
+    # Total Borrowings
+    total_borrowings = Borrowing.objects.count()
+    
+    # Total Reservations
+    total_reservations = Reservation.objects.count()
+    
+    # Books not returned yet (borrowed or overdue status)
+    books_not_returned = Borrowing.objects.filter(
+        status__in=['borrowed', 'overdue']
+    ).count()
+    
+    # Books with fines
+    books_fined = Fine.objects.values('borrowing').distinct().count()
+    
+    # Additional useful stats
+    pending_requests = Borrowing.objects.filter(status='pending').count()
+    overdue_books = Borrowing.objects.filter(status='overdue').count()
+    total_fine_amount = Fine.objects.filter(paid=False).aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0.00')
+    
+    # Recent activity (last 30 days)
+    from datetime import datetime, timedelta
+    thirty_days_ago = datetime.now() - timedelta(days=30)
+    
+    recent_borrowings = Borrowing.objects.filter(
+        borrow_date__gte=thirty_days_ago
+    ).count()
+    
+    recent_reservations = Reservation.objects.filter(
+        created_at__gte=thirty_days_ago
+    ).count()
+    
+    context = {
+        'total_books': total_books,
+        'total_members': total_members,
+        'membership_breakdown': membership_breakdown,
+        'total_fees_collected': total_fees_collected,
+        'total_borrowings': total_borrowings,
+        'total_reservations': total_reservations,
+        'books_not_returned': books_not_returned,
+        'books_fined': books_fined,
+        'pending_requests': pending_requests,
+        'overdue_books': overdue_books,
+        'total_fine_amount': total_fine_amount,
+        'recent_borrowings': recent_borrowings,
+        'recent_reservations': recent_reservations,
+    }
+    
+    return render(request, 'manager/reports.html', context)

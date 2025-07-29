@@ -16,6 +16,7 @@
         
         <!-- Sidebar links -->
         <div class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+            
             {% if user.is_authenticated %}
                 {% if user.role == 'member' %}
                     <div class="px-3 py-2">
@@ -25,14 +26,7 @@
                         <i class="fas fa-home text-base mr-2 {% if request.path == '/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"></i>
                         <span class="sidebar-text-item">My Dashboard</span>
                     </a>
-                    <a href="/my-books/" class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/my-books/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group">
-                        <i class="fas fa-book text-base mr-2 {% if request.path == '/my-books/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"></i>
-                        <span class="sidebar-text-item">My Books</span>
-                    </a>
-                    <a href="/search/" class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/search/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group">
-                        <i class="fas fa-search text-base mr-2 {% if request.path == '/search/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"></i>
-                        <span class="sidebar-text-item">Search Catalog</span>
-                    </a>
+                 
                     <a href="{% url 'reservations:user_reservations' %}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/reserve/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group">
                         <i class="fas fa-sync text-base mr-2 {% if request.path == '/reserve/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"></i>
                         <span class="sidebar-text-item">Reserve a Book</span>
@@ -44,6 +38,10 @@
                     <a href="/fines/" class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/fines/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group">
                         <i class="fas fa-credit-card text-base mr-2 {% if request.path == '/fines/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"></i>
                         <span class="sidebar-text-item">Pay Fines</span>
+                    </a>
+                    <a href="{% url 'users:membership' %}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/users/membership/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group">
+                        <i class="fas fa-crown text-base mr-2 {% if request.path == '/users/membership/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"></i>
+                        <span class="sidebar-text-item">Membership</span>
                     </a>
                     
                     <div class="px-3 py-2 mt-6">
@@ -157,6 +155,31 @@
                         <i class="fas fa-cog text-base mr-2 {% if request.path == '/admin/settings/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"></i>
                         <span class="sidebar-text-item">Admin Settings</span>
                     </a>
+                {%elif user.role == 'manager'%}
+                  
+                        <a href="/" class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group">
+                            <i class="fas fa-home text-base mr-2 {% if request.path == '/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"></i>
+                            <span class="sidebar-text-item">Home</span>
+                        </a>
+                        <div class="px-3 py-2">
+                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider sidebar-text-item">Analytics</p>
+                        </div>
+                        <a href="{% url 'library:reports' %}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/reports/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group">
+                            <i class="fas fa-file-alt text-base mr-2 {% if request.path == '/reports/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"></i>
+                            <span class="sidebar-text-item">Reports</span>
+                        </a>
+                        <div class="px-3 py-2">
+                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider sidebar-text-item">Management</p>
+                        </div>
+                        <a href="/admin/users/" class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/admin/users/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group">
+                            <i class="fas fa-users text-base mr-2 {% if request.path == '/admin/users/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"></i>
+                            <span class="sidebar-text-item">Manage Users</span>
+                        </a>
+                        <a href="/admin/branches/" class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/admin/branches/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group">
+                            <i class="fas fa-building text-base mr-2 {% if request.path == '/admin/branches/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"></i>
+                            <span class="sidebar-text-item">Manage Branches</span>
+                        </a>
+
                 {% else %}
                     <!-- Default authenticated user links -->
                     <div class="px-3 py-2">
@@ -190,12 +213,12 @@
         <!-- Logout button -->
         <div class="p-4 border-t border-gray-200 dark:border-gray-800">
             {% if user.is_authenticated %}
-                <a href="{% url 'logout' %}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black group">
+                <a href="{% url 'users:logout' %}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black group">
                     <i class="fas fa-sign-out-alt text-base mr-2 text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"></i>
                     <span class="sidebar-text-item">Logout</span>
                 </a>
             {% else %}
-                <a href="{% url 'login' %}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black group">
+                <a href="{% url 'users:login' %}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black group">
                     <i class="fas fa-sign-in-alt text-base mr-2 text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"></i>
                     <span class="sidebar-text-item">Login</span>
                 </a>
@@ -206,3 +229,5 @@
 
 <!-- Mobile sidebar overlay -->
 <div id="sidebar-overlay" class="fixed inset-0 bg-gray-800 bg-opacity-75 z-20 hidden transition-opacity duration-300 ease-in-out"></div>
+
+

@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.conf import settings
 from django.utils import timezone
 from .forms import UserRegistrationForm, UserLoginForm
-from .models import User
+from .models import User, MembershipType
 
 # Create your views here.
 
@@ -95,3 +95,49 @@ def logout_view(request):
     logout(request)
     messages.success(request, "You have been logged out successfully!")
     return redirect('library:home')
+
+def membership_view(request):
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            messages.error(request, "Please log in to select a membership.")
+            return redirect('users:login')
+        
+        selected_plan = request.POST.get('selected_plan')
+        
+        if not selected_plan:
+            messages.error(request, "Please select a membership plan.")
+            return render(request, 'membership.html')
+        
+        # Map frontend plan names to database membership names
+        plan_mapping = {
+            'student': 'Student Member',
+            'basic': 'Basic Member',
+            'premium': 'Premium Member'
+        }
+        
+        if selected_plan in plan_mapping:
+            membership_name = plan_mapping[selected_plan]
+            
+            try:
+                # Fetch the existing membership type from database
+                membership_type = MembershipType.objects.get(name=membership_name)
+                
+                # Assign membership to user
+                old_membership = request.user.membership
+                request.user.membership = membership_type
+                request.user.save()
+                
+                if old_membership:
+                    messages.success(request, f"Your membership has been updated from {old_membership.name} to {membership_type.name}!")
+                else:
+                    messages.success(request, f"Welcome to {membership_type.name} membership! Your account has been upgraded.")
+                
+                return redirect('users:membership')
+                
+            except MembershipType.DoesNotExist:
+                messages.error(request, f"Membership type '{membership_name}' not found. Please contact support.")
+        else:
+            messages.error(request, "Invalid membership plan selected.")
+    
+    return render(request, 'membership.html')
+

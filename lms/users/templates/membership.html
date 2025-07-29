@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<style>
+.membership-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+.membership-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+.membership-card.selected {
+    border-color: #4f46e5;
+    box-shadow: 0 10px 25px rgba(79, 70, 229, 0.2);
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+.membership-card.popular {
+    position: relative;
+    border-color: #10b981;
+}
+.popular-badge {
+    position: absolute;
+    top: -8px;
+    right: 20px;
+    background: #10b981;
+    color: white;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+.feature-check {
+    color: #10b981;
+}
+.billing-toggle {
+    background: #f1f5f9;
+    border-radius: 50px;
+    padding: 4px;
+    display: inline-flex;
+    margin: 20px 0;
+}
+.billing-option {
+    padding: 8px 20px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+.billing-option.active {
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: #1f2937;
+}
+.discount-badge {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 8px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 max-w-7xl">
+    <!-- Header Section -->
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">Membership Plans</h1>
+        <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+            Choose the perfect membership plan for your reading needs. 
+            Unlock unlimited access to our extensive library collection.
+        </p>
+        
+        <!-- Billing Toggle -->
+        <div class="flex justify-center mt-8">
+            <div class="billing-toggle">
+                <div class="billing-option active" id="monthly-toggle">Monthly</div>
+                <div class="billing-option" id="annual-toggle">
+                    Annual 
+                    <span class="discount-badge">Save 17%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" id="membership-form">
+        {% csrf_token %}
+        
+        <!-- Membership Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            
+            <!-- Student Member Plan -->
+            <div class="membership-card bg-white rounded-xl border-2 border-gray-200 p-8 hover:border-indigo-300" data-plan="student">
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-500 uppercase tracking-wide mb-2">Student Member</h3>
+                    <div class="price-container">
+                        <span class="text-4xl font-bold text-gray-900 monthly-price">30</span>
+                        <span class="text-4xl font-bold text-gray-900 annual-price hidden">300</span>
+                        <span class="text-gray-500 ml-2 billing-period">MVR / month</span>
+                    </div>
+                    <p class="text-gray-600 mt-2">Perfect for students</p>
+                </div>
+                
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-center">
+                        <i class="fas fa-check feature-check mr-3"></i>
+                        <span>Borrow up to 4 books</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check feature-check mr-3"></i>
+                        <span>21-day loan period</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check feature-check mr-3"></i>
+                        <span>Basic catalog access</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check feature-check mr-3"></i>
+                        <span>Email notifications</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-graduation-cap feature-check mr-3"></i>
+                        <span>Student discount rate</span>
+                    </li>
+                </ul>
+                
+                <input type="radio" name="selected_plan" value="student" class="plan-radio hidden" />
+                <button type="button" class="select-plan-btn w-full py-3 px-6 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:border-indigo-500 hover:text-indigo-600 transition duration-200">
+                    Get Started
+                </button>
+            </div>
+
+            <!-- Basic Member Plan -->
+            <div class="membership-card bg-white rounded-xl border-2 border-gray-200 p-8 hover:border-indigo-300" data-plan="basic">
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-500 uppercase tracking-wide mb-2">Basic Member</h3>
+                    <div class="price-container">
+                        <span class="text-4xl font-bold text-gray-900 monthly-price">50</span>
+                        <span class="text-4xl font-bold text-gray-900 annual-price hidden">500</span>
+                        <span class="text-gray-500 ml-2 billing-period">MVR / month</span>
+                    </div>
+                    <p class="text-gray-600 mt-2">Great for casual readers</p>
+                </div>
+                
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-center">
+                        <i class="fas fa-check feature-check mr-3"></i>
+                        <span>Borrow up to 3 books</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check feature-check mr-3"></i>
+                        <span>14-day loan period</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check feature-check mr-3"></i>
+                        <span>Full catalog access</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check feature-check mr-3"></i>
+                        <span>Email notifications</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check feature-check mr-3"></i>
+                        <span>Standard borrowing</span>
+                    </li>
+                </ul>
+                
+                <input type="radio" name="selected_plan" value="basic" class="plan-radio hidden" />
+                <button type="button" class="select-plan-btn w-full py-3 px-6 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:border-indigo-500 hover:text-indigo-600 transition duration-200">
+                    Get Started
+                </button>
+            </div>
+
+            <!-- Premium Member Plan (Popular) -->
+            <div class="membership-card popular bg-white rounded-xl border-2 border-green-400 p-8 relative" data-plan="premium">
+                <div class="popular-badge">Most Popular</div>
+                
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-500 uppercase tracking-wide mb-2">Premium Member</h3>
+                    <div class="price-container">
+                        <span class="text-4xl font-bold text-gray-900 monthly-price">75</span>
+                        <span class="text-4xl font-bold text-gray-900 annual-price hidden">750</span>
+                        <span class="text-gray-500 ml-2 billing-period">MVR / month</span>
+                    </div>
+                    <p class="text-gray-600 mt-2">Best for avid readers</p>
+                </div>
+                
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-center">
+                        <i class="fas fa-check feature-check mr-3"></i>
+                        <span>Borrow up to 5 books</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check feature-check mr-3"></i>
+                        <span>14-day loan period</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check feature-check mr-3"></i>
+                        <span>Full catalog access</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check feature-check mr-3"></i>
+                        <span>Priority reservations</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check feature-check mr-3"></i>
+                        <span>7-day loan extensions</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check feature-check mr-3"></i>
+                        <span>Digital resources access</span>
+                    </li>
+                </ul>
+                
+                <input type="radio" name="selected_plan" value="premium" class="plan-radio hidden" />
+                <button type="button" class="select-plan-btn w-full py-3 px-6 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition duration-200">
+                    Get Started
+                </button>
+            </div>
+        </div>
+
+        <!-- Action Button -->
+        <div class="text-center">
+            <button type="submit" id="confirm-selection" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 px-8 rounded-lg text-lg transition duration-200 shadow-lg">
+                <i class="fas fa-credit-card mr-2"></i>
+                Confirm Selection
+            </button>
+        </div>
+    </form>
+
+    <!-- Current Membership Status -->
+    {% if user.membership %}
+    <div class="mt-12 bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <div class="flex items-center">
+            <i class="fas fa-info-circle text-blue-500 mr-3"></i>
+            <div>
+                <h4 class="font-semibold text-blue-900">Current Membership</h4>
+                <p class="text-blue-700">You currently have a <strong>{{ user.membership.name }}</strong> membership.</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const membershipCards = document.querySelectorAll('.membership-card');
+    const confirmBtn = document.getElementById('confirm-selection');
+    const monthlyToggle = document.getElementById('monthly-toggle');
+    const annualToggle = document.getElementById('annual-toggle');
+    const monthlyPrices = document.querySelectorAll('.monthly-price');
+    const annualPrices = document.querySelectorAll('.annual-price');
+    const billingPeriods = document.querySelectorAll('.billing-period');
+    
+    let selectedPlan = null;
+    let isAnnual = false;
+
+    // Handle billing period toggle
+    monthlyToggle.addEventListener('click', function() {
+        if (isAnnual) {
+            isAnnual = false;
+            monthlyToggle.classList.add('active');
+            annualToggle.classList.remove('active');
+            
+            monthlyPrices.forEach(price => price.classList.remove('hidden'));
+            annualPrices.forEach(price => price.classList.add('hidden'));
+            billingPeriods.forEach(period => period.textContent = 'MVR / month');
+        }
+    });
+
+    annualToggle.addEventListener('click', function() {
+        if (!isAnnual) {
+            isAnnual = true;
+            annualToggle.classList.add('active');
+            monthlyToggle.classList.remove('active');
+            
+            annualPrices.forEach(price => price.classList.remove('hidden'));
+            monthlyPrices.forEach(price => price.classList.add('hidden'));
+            billingPeriods.forEach(period => period.textContent = 'MVR / year');
+        }
+    });
+
+    // Handle card selection
+    membershipCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Remove selected class from all cards
+            membershipCards.forEach(c => {
+                c.classList.remove('selected');
+                c.querySelector('.plan-radio').checked = false;
+                const btn = c.querySelector('.select-plan-btn');
+                if (c.dataset.plan === 'student') {
+                    btn.textContent = 'Get Started';
+                    btn.className = 'select-plan-btn w-full py-3 px-6 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:border-indigo-500 hover:text-indigo-600 transition duration-200';
+                } else if (c.dataset.plan === 'basic') {
+                    btn.textContent = 'Get Started';
+                    btn.className = 'select-plan-btn w-full py-3 px-6 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:border-indigo-500 hover:text-indigo-600 transition duration-200';
+                } else if (c.dataset.plan === 'premium') {
+                    btn.textContent = 'Get Started';
+                    btn.className = 'select-plan-btn w-full py-3 px-6 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition duration-200';
+                }
+            });
+            
+            // Add selected class to clicked card
+            this.classList.add('selected');
+            this.querySelector('.plan-radio').checked = true;
+            selectedPlan = this.dataset.plan;
+            
+            // Update button text
+            const btn = this.querySelector('.select-plan-btn');
+            btn.innerHTML = '<i class="fas fa-check mr-2"></i>Selected';
+            
+            // Show confirm button
+            confirmBtn.classList.remove('hidden');
+        });
+    });
+
+    // Handle form submission
+    document.getElementById('membership-form').addEventListener('submit', function(e) {
+        if (!selectedPlan) {
+            e.preventDefault();
+            alert('Please select a membership plan');
+        }
+    });
+});
+</script>
+
+{% endblock %}

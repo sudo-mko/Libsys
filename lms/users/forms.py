@@ -12,7 +12,7 @@ class UserRegistrationForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Apply consistent styling to all form fields
-        field_styling = 'w-full h-12 px-4 py-3 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A65] focus:border-[#FF8A65]'
+        field_styling = 'w-full h-12 px-4 py-3 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600'
         
         self.fields['username'].widget.attrs.update({
             'class': field_styling,
@@ -45,10 +45,10 @@ class UserRegistrationForm(UserCreationForm):
 
 class UserLoginForm(AuthenticationForm):
     username = forms.CharField(widget=forms.TextInput(attrs={
-        'class': 'w-full h-12 px-4 py-3 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A65] focus:border-[#FF8A65]',
+        'class': 'w-full h-12 px-4 py-3 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600',
         'placeholder': 'Enter your username'
     }))
     password = forms.CharField(widget=forms.PasswordInput(attrs={
-        'class': 'w-full h-12 px-4 py-3 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A65] focus:border-[#FF8A65]',
+        'class': 'w-full h-12 px-4 py-3 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600',
         'placeholder': '••••••••'
     }))
