@@ -145,6 +145,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
 
 
+<<<<<<< HEAD
+NPM_BIN_PATH = "/usr/bin/npm"
+=======
 NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
 
 # Account Lock Settings
@@ -154,3 +157,4 @@ ACCOUNT_LOCK_SETTINGS = {
     'AFFECTED_USER_ROLES': ['member'],  # Configurable list for future flexibility
     'WARNING_THRESHOLD': 3,  # Start showing warnings after this many failed attempts
 }
+>>>>>>> upstream/main

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 py-8">
+    <div class="container mx-auto px-4">
+        <div class="max-w-2xl mx-auto">
+            <div class="bg-white rounded-lg shadow-lg p-8 border border-gray-200">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-user-circle text-indigo-500 text-3xl"></i>
+                    Profile
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-gray-500 text-sm mb-1">Username</p>
+                        <p class="text-gray-900 font-medium">{{ user.username }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm mb-1">Email</p>
+                        <p class="text-gray-900 font-medium">{{ user.email }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm mb-1">First Name</p>
+                        <p class="text-gray-900 font-medium">{{ user.first_name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm mb-1">Last Name</p>
+                        <p class="text-gray-900 font-medium">{{ user.last_name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm mb-1">Phone Number</p>
+                        <p class="text-gray-900 font-medium">{{ user.phone_number }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm mb-1">Role</p>
+                        <p class="text-gray-900 font-medium capitalize">{{ user.role }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm mb-1">Joined</p>
+                        <p class="text-gray-900 font-medium">{{ user.created_at|date:'F j, Y' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
