@@ -5,7 +5,12 @@ from django.contrib import messages
 from django.conf import settings
 from django.utils import timezone
 from .forms import UserRegistrationForm, UserLoginForm
+<<<<<<< HEAD
+from django.contrib.auth.decorators import login_required
+from .models import User
+=======
 from .models import User, MembershipType
+>>>>>>> upstream/main
 
 # Create your views here.
 
@@ -97,6 +102,32 @@ def logout_view(request):
     messages.success(request, "You have been logged out successfully!")
     return redirect('library:home')
 
+<<<<<<< HEAD
+@login_required
+def profile_view(request):
+    user = request.user
+    if not user.is_authenticated:
+        return redirect('login')
+    if user.role == 'admin':
+        users = User.objects.all()
+        selected_user_id = request.GET.get('user_id')
+        selected_user = None
+        if selected_user_id:
+            try:
+                selected_user = User.objects.get(id=selected_user_id)
+            except User.DoesNotExist:
+                selected_user = None
+        return render(request, 'profile.html', {
+            'is_admin': True,
+            'users': users,
+            'selected_user': selected_user,
+        })
+    else:
+        return render(request, 'profile.html', {
+            'is_admin': False,
+            'user': user,
+        })
+=======
 def membership_view(request):
     if request.method == 'POST':
         if not request.user.is_authenticated:
@@ -629,3 +660,4 @@ def user_reports(request):
     }
 
     return render(request, 'manager/user_reports.html', context)
+>>>>>>> upstream/main

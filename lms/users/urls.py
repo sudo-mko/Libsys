@@ -7,6 +7,9 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('register/', views.register_view, name='register'),
+<<<<<<< HEAD
+    path('profile/', views.profile_view, name='profile'),
+=======
     path('membership/', views.membership_view, name='membership'),
     path('manage-users/', views.manage_users, name='manage_users'),
     path('user-list/', views.user_list, name='user_list'),
@@ -16,4 +19,5 @@ urlpatterns = [
     path('manage-memberships/', views.manage_memberships, name='manage_memberships'),
     path('unlock-accounts/', views.unlock_accounts, name='unlock_accounts'),
     path('user-reports/', views.user_reports, name='user_reports'),
+>>>>>>> upstream/main
 ]
