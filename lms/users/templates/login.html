@@ -26,16 +26,29 @@
         <div class="w-full max-w-[400px]">
             <!-- Logo/Icon -->
             <div class="flex justify-center mb-8">
-                <div class="w-12 h-12 rounded-full bg-[#FF8A65] flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                </div>
+                <h1 class="text-2xl font-semibold text-indigo-600 dark:text-indigo-400 sidebar-text flex items-center">
+                    <i class="fas fa-book-open mr-2 text-indigo-600 dark:text-indigo-400"></i>
+                    <span class="sidebar-text-item">LibraryMS</span>
+                </h1>
             </div>
 
             <!-- Heading and Subtitle -->
             <h1 class="text-3xl font-semibold text-[#1F2937] text-center mb-2">Log in to your account</h1>
             <p class="text-base text-[#6B7280] text-center mb-8">Welcome back! Please enter your details.</p>
+
+            <!-- Account Lock Status -->
+            {% if is_locked %}
+            <div id="lockStatus" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <div class="flex items-center">
+                    <i class="fas fa-lock mr-2"></i>
+                    <div>
+                        <p class="font-semibold">Account Locked</p>
+                        <p class="text-sm">Your account has been locked due to too many failed login attempts.</p>
+                        <p class="text-sm font-medium">Time remaining: <span id="countdown">{{ lock_message }}</span></p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
 
             <!-- Messages -->
             {% if messages %}
@@ -68,40 +81,67 @@
                     {% endif %}
                 </div>
 
-                <!-- Remember Me and Forgot Password -->
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <input type="checkbox" id="remember" name="remember" class="h-4 w-4 text-[#FF8A65] focus:ring-[#FF8A65] border-gray-300 rounded">
-                        <label for="remember" class="ml-2 block text-sm text-[#6B7280]">Remember for 30 days</label>
-                    </div>
-                    <a href="#" class="text-sm text-[#FF8A65] hover:text-[#FF7043]">Forgot password</a>
-                </div>
-
                 <!-- Sign In Button -->
-                <button type="submit" class="w-full h-12 bg-[#FF8A65] hover:bg-[#FF7043] text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
-                    Sign in
-                </button>
-
-                <!-- Google Sign In -->
-                <button type="button" class="w-full h-12 bg-white border border-[#D1D5DB] hover:bg-[#F9FAFB] text-[#374151] font-medium py-3 px-6 rounded-lg flex items-center justify-center transition duration-200">
-                    <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.345-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.39-.189-1.989H12.24z" fill="currentColor"/>
-                    </svg>
-                    Sign in with Google
+                <button 
+                    type="submit" 
+                    id="loginButton"
+                    {% if is_locked %}disabled{% endif %}
+                    class="w-full h-12 {% if is_locked %}bg-gray-400 cursor-not-allowed{% else %}bg-indigo-600 hover:bg-indigo-700{% endif %} text-white font-semibold py-3 px-6 rounded-lg transition duration-200"
+                >
+                    {% if is_locked %}
+                        <i class="fas fa-lock mr-2"></i>Account Locked
+                    {% else %}
+                        Sign in
+                    {% endif %}
                 </button>
             </form>
 
             <!-- Sign Up Link -->
             <div class="text-center mt-6">
                 <span class="text-sm text-[#6B7280]">Don't have an account? </span>
-                <a href="{% url 'register' %}" class="text-sm text-[#FF8A65] hover:text-[#FF7043] font-medium">Sign up</a>
+                <a href="{% url 'users:register' %}" class="text-sm text-indigo-600 hover:text-indigo-700 font-medium">Sign up</a>
             </div>
 
             <!-- Copyright -->
             <div class="mt-10 text-center">
-                <p class="text-xs text-[#9CA3AF]">© softzino_technologies</p>
+                <p class="text-xs text-[#9CA3AF]">© mosai_devs</p>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Account Lock Countdown Script -->
+{% if is_locked %}
+<div id="lockData" data-remaining-seconds="{{ remaining_seconds }}" style="display: none;"></div>
+<script>
+    const lockData = document.getElementById('lockData');
+    let remainingSeconds = parseInt(lockData.getAttribute('data-remaining-seconds'));
+    const countdownElement = document.getElementById('countdown');
+    const loginButton = document.getElementById('loginButton');
+    const lockStatus = document.getElementById('lockStatus');
+
+    function updateCountdown() {
+        if (remainingSeconds <= 0) {
+            // Account is no longer locked, refresh the page
+            location.reload();
+            return;
+        }
+
+        const minutes = Math.floor(remainingSeconds / 60);
+        const seconds = remainingSeconds % 60;
+        countdownElement.textContent = `${minutes}m ${seconds}s`;
+        
+        remainingSeconds--;
+    }
+
+    // Update countdown immediately and then every second
+    updateCountdown();
+    const countdownInterval = setInterval(updateCountdown, 1000);
+
+    // Clean up interval when page is being unloaded
+    window.addEventListener('beforeunload', function() {
+        clearInterval(countdownInterval);
+    });
+</script>
+{% endif %}
 {% endblock %}
