@@ -160,7 +160,7 @@ def manage_users(request):
     status_filter = request.GET.get('status', '')
     
     # Base queryset
-    users = User.objects.all()
+    users = User.objects.filter(role__in=['member', 'librarian'])
     
     # Apply filters
     if search_query:
@@ -188,8 +188,8 @@ def manage_users(request):
     locked_accounts = User.objects.filter(account_locked_until__isnull=False).count()
     
     # Role distribution
-    role_distribution = User.objects.values('role').annotate(
-        count=Count('id')
+    role_distribution = User.objects.filter(role__in=['member', 'librarian']).values('role').annotate(
+    count=Count('id')
     ).order_by('role')
     
     # Calculate percentages for role distribution
@@ -344,33 +344,33 @@ def manage_memberships(request):
     
     return render(request, 'manager/manage_memberships.html', context)
 
-@login_required
-def unlock_accounts(request):
-    if request.user.role != 'manager':
-        from django.http import HttpResponseForbidden
-        return HttpResponseForbidden("You don't have permission to unlock accounts.")
+# @login_required
+# def unlock_accounts(request):
+#     if request.user.role != 'manager':
+#         from django.http import HttpResponseForbidden
+#         return HttpResponseForbidden("You don't have permission to unlock accounts.")
     
-    from users.models import User
-    from django.contrib import messages
+#     from users.models import User
+#     from django.contrib import messages
     
-    # Get locked accounts
-    locked_users = User.objects.filter(account_locked_until__isnull=False)
+#     # Get locked accounts
+#     locked_users = User.objects.filter(account_locked_until__isnull=False)
     
-    if request.method == 'POST':
-        user_id = request.POST.get('user_id')
-        if user_id:
-            try:
-                user = User.objects.get(id=user_id)
-                user.reset_lock_status()
-                messages.success(request, f'Account for {user.username} has been unlocked.')
-            except User.DoesNotExist:
-                messages.error(request, 'User not found.')
+#     if request.method == 'POST':
+#         user_id = request.POST.get('user_id')
+#         if user_id:
+#             try:
+#                 user = User.objects.get(id=user_id)
+#                 user.reset_lock_status()
+#                 messages.success(request, f'Account for {user.username} has been unlocked.')
+#             except User.DoesNotExist:
+#                 messages.error(request, 'User not found.')
     
-    context = {
-        'locked_users': locked_users,
-    }
+#     context = {
+#         'locked_users': locked_users,
+#     }
     
-    return render(request, 'manager/unlock_accounts.html', context)
+#     return render(request, 'manager/unlock_accounts.html', context)
 
 @login_required
 def user_list(request):
@@ -380,6 +380,16 @@ def user_list(request):
     
     from django.db.models import Q
     from django.core.paginator import Paginator
+
+    if request.method == 'POST' and 'user_id' in request.POST:
+        user_id = request.POST.get('user_id')
+        try:
+            user = User.objects.get(id=user_id)
+            user.reset_lock_status()
+            messages.success(request, f"Account for {user.username} has been unlocked.")
+        except User.DoesNotExist:
+            messages.error(request, "User not found.")
+        return redirect('users:user_list')
     
     # Get filter parameters
     search_query = request.GET.get('search', '')
@@ -388,7 +398,7 @@ def user_list(request):
     membership_filter = request.GET.get('membership', '')
     
     # Base queryset
-    users = User.objects.select_related('membership').all()
+    users = User.objects.filter(role__in=['member', 'librarian'])
     
     # Apply filters
     if search_query:
@@ -502,8 +512,7 @@ def delete_user(request, user_id):
     
     return redirect('users:user_list')
 
-@login_required
-def user_reports(request):
+
     if request.user.role != 'manager':
         from django.http import HttpResponseForbidden
         return HttpResponseForbidden("You don't have permission to view user reports.")
@@ -514,6 +523,8 @@ def user_reports(request):
     from django.contrib import messages
     from django.http import HttpResponse
     import csv
+
+
 
     # Get filter parameters
     search_query = request.GET.get('search', '')

@@ -156,19 +156,7 @@
             </a>
         </div>
 
-        <!-- Unlock Accounts -->
-        <div class="bg-white rounded-lg shadow-md p-6 text-center">
-            <div class="text-3xl font-bold text-orange-600 mb-2">
-                <svg class="w-12 h-12 mx-auto text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path>
-                </svg>
-            </div>
-            <div class="text-sm text-gray-600 mb-4">Unlock Accounts</div>
-            <a href="{% url 'users:unlock_accounts' %}" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
-                Unlock Users
-            </a>
-        </div>
-
+       
         <!-- User Reports -->
         <div class="bg-white rounded-lg shadow-md p-6 text-center">
             <div class="text-3xl font-bold text-purple-600 mb-2">
@@ -242,7 +230,7 @@
 
             <!-- Clear Filters Button -->
             <div class="flex items-end min-w-[100px]">
-                <a href="{% url 'users:user_reports' %}" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md font-medium transition duration-200 text-center">
+                <a href="{% url 'users:user_list' %}" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md font-medium transition duration-200 text-center">
                     Clear
                 </a>
             </div>
@@ -374,7 +362,7 @@
 
                                 <!-- Unlock Account -->
                                 {% if user.is_account_locked %}
-                                <form method="POST" action="{% url 'users:unlock_accounts' %}" class="inline">
+                                <form method="POST" action="{% url 'users:user_list' %}" class="inline">
                                     {% csrf_token %}
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
                                     <button type="submit" 

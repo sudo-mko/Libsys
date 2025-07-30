@@ -26,8 +26,6 @@
                 <option value="">All Roles</option>
                 <option value="member" {% if request.GET.role == 'member' %}selected{% endif %}>Member</option>
                 <option value="librarian" {% if request.GET.role == 'librarian' %}selected{% endif %}>Librarian</option>
-                <option value="manager" {% if request.GET.role == 'manager' %}selected{% endif %}>Manager</option>
-                <option value="admin" {% if request.GET.role == 'admin' %}selected{% endif %}>Admin</option>
             </select>
         </div>
 
@@ -65,7 +63,7 @@
 
         <!-- Clear Filters Button -->
         <div class="flex items-end min-w-[100px]">
-            <a href="{% url 'users:user_reports' %}" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md font-medium transition duration-200 text-center">
+            <a href="{% url 'users:user_list' %}" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md font-medium transition duration-200 text-center">
                 Clear
             </a>
         </div>
@@ -213,7 +211,7 @@
 
                                 <!-- Unlock Account -->
                                 {% if user.is_account_locked %}
-                                <form method="POST" action="{% url 'users:unlock_accounts' %}" class="inline">
+                                <form method="POST" action="{% url 'users:user_list' %}" class="inline">
                                     {% csrf_token %}
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
                                     <button type="submit" 
