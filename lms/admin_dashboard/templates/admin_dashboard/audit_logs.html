@@ -1,0 +1,323 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block admin_content %}
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-900">Audit Logs & Security Monitoring</h2>
+</div>
+
+<!-- Security Statistics Dashboard -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-red-50 p-4 rounded-lg">
+        <h3 class="text-sm font-medium text-red-600">Failed Logins Today</h3>
+        <p class="text-2xl font-bold text-red-900">{{ security_stats.failed_logins_today }}</p>
+    </div>
+    <div class="bg-orange-50 p-4 rounded-lg">
+        <h3 class="text-sm font-medium text-orange-600">Locked Accounts Today</h3>
+        <p class="text-2xl font-bold text-orange-900">{{ security_stats.locked_accounts_today }}</p>
+    </div>
+    <div class="bg-yellow-50 p-4 rounded-lg">
+        <h3 class="text-sm font-medium text-yellow-600">Failed Logins (7 days)</h3>
+        <p class="text-2xl font-bold text-yellow-900">{{ security_stats.failed_logins_week }}</p>
+    </div>
+    <div class="bg-purple-50 p-4 rounded-lg">
+        <h3 class="text-sm font-medium text-purple-600">Suspicious Activities (7 days)</h3>
+        <p class="text-2xl font-bold text-purple-900">{{ security_stats.suspicious_activities_week }}</p>
+    </div>
+</div>
+
+<!-- Recent Security Events -->
+{% if recent_security_events %}
+<div class="bg-white rounded-lg shadow mb-6">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-bold text-gray-900">Recent Security Events (24 hours)</h3>
+    </div>
+    <div class="max-h-64 overflow-y-auto">
+        {% for event in recent_security_events %}
+        <div class="px-6 py-3 border-b border-gray-100 flex items-center justify-between">
+            <div>
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                    {% if event.action == 'LOGIN_FAILED' %}bg-red-100 text-red-800
+                    {% elif event.action == 'ACCOUNT_LOCKED' %}bg-orange-100 text-orange-800
+                    {% elif event.action == 'SESSION_TIMEOUT' %}bg-blue-100 text-blue-800
+                    {% else %}bg-purple-100 text-purple-800{% endif %}">
+                    {{ event.get_action_display }}
+                </span>
+                <span class="ml-2 text-sm text-gray-900">
+                    {% if event.user %}{{ event.user.username }}{% else %}Unknown{% endif %}
+                </span>
+                <span class="ml-2 text-sm text-gray-500">{{ event.details|truncatechars:50 }}</span>
+            </div>
+            <div class="text-sm text-gray-500">
+                {{ event.timestamp|timesince }} ago
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Top Failed Login IPs -->
+{% if failed_login_ips %}
+<div class="bg-white rounded-lg shadow mb-6">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-bold text-gray-900">Top Failed Login IP Addresses (7 days)</h3>
+    </div>
+    <div class="px-6 py-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for ip_data in failed_login_ips %}
+            <div class="bg-red-50 p-3 rounded-lg">
+                <div class="text-sm font-medium text-red-900">{{ ip_data.ip_address }}</div>
+                <div class="text-xs text-red-600">{{ ip_data.count }} failed attempts</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Filters -->
+<div class="bg-white p-6 rounded-lg shadow mb-6">
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Filter Audit Logs</h3>
+    <form method="GET" class="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <div>
+            <label for="action" class="block text-sm font-medium text-gray-700">Action</label>
+            <select name="action" id="action" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                <option value="">All Actions</option>
+                {% for value, label in action_choices %}
+                <option value="{{ value }}" {% if action_filter == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div>
+            <label for="user" class="block text-sm font-medium text-gray-700">User</label>
+            <input type="text" name="user" id="user" value="{{ user_filter|default:'' }}" 
+                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                   placeholder="Username or name">
+        </div>
+        
+        <div>
+            <label for="date_from" class="block text-sm font-medium text-gray-700">From Date</label>
+            <input type="date" name="date_from" id="date_from" value="{{ date_from|default:'' }}"
+                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        
+        <div>
+            <label for="date_to" class="block text-sm font-medium text-gray-700">To Date</label>
+            <input type="date" name="date_to" id="date_to" value="{{ date_to|default:'' }}"
+                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        
+        <div>
+            <label for="security" class="block text-sm font-medium text-gray-700">Security Filter</label>
+            <select name="security" id="security" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                <option value="">All Events</option>
+                <option value="security_events" {% if security_filter == 'security_events' %}selected{% endif %}>Security Events Only</option>
+            </select>
+        </div>
+        
+        <div class="flex items-end space-x-2">
+            <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <i class="fas fa-filter mr-2"></i>Filter
+            </button>
+            <a href="{% url 'admin_dashboard:audit_logs' %}" class="flex-1 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 text-center">
+                <i class="fas fa-times mr-2"></i>Clear
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Active Filters Summary -->
+{% if action_filter or user_filter or date_from or date_to or security_filter %}
+<div class="bg-blue-50 p-4 rounded-lg mb-6">
+    <h3 class="text-sm font-medium text-blue-800 mb-2">Active Filters:</h3>
+    <div class="flex flex-wrap gap-2">
+        {% if action_filter %}
+        <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+            Action: {{ action_filter|default:'Unknown' }}
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'action' and key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-1 text-blue-600 hover:text-blue-800">
+                <i class="fas fa-times text-xs"></i>
+            </a>
+        </span>
+        {% endif %}
+        {% if user_filter %}
+        <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+            User: {{ user_filter|default:'Unknown' }}
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'user' and key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-1 text-blue-600 hover:text-blue-800">
+                <i class="fas fa-times text-xs"></i>
+            </a>
+        </span>
+        {% endif %}
+        {% if date_from %}
+        <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+            From: {{ date_from }}
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'date_from' and key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-1 text-blue-600 hover:text-blue-800">
+                <i class="fas fa-times text-xs"></i>
+            </a>
+        </span>
+        {% endif %}
+        {% if date_to %}
+        <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+            To: {{ date_to }}
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'date_to' and key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-1 text-blue-600 hover:text-blue-800">
+                <i class="fas fa-times text-xs"></i>
+            </a>
+        </span>
+        {% endif %}
+        {% if security_filter %}
+        <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+            Security Events Only
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'security' and key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-1 text-blue-600 hover:text-blue-800">
+                <i class="fas fa-times text-xs"></i>
+            </a>
+        </span>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Quick Filter Shortcuts -->
+<div class="bg-white p-4 rounded-lg shadow mb-6">
+    <h3 class="text-sm font-medium text-gray-700 mb-3">Quick Filters:</h3>
+    <div class="flex flex-wrap gap-2">
+        <a href="?security=security_events" class="px-3 py-1 text-xs bg-red-100 text-red-800 rounded-full hover:bg-red-200">
+            Security Events
+        </a>
+        <a href="?action=LOGIN_SUCCESS" class="px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full hover:bg-green-200">
+            Successful Logins
+        </a>
+        <a href="?action=LOGIN_FAILED" class="px-3 py-1 text-xs bg-red-100 text-red-800 rounded-full hover:bg-red-200">
+            Failed Logins
+        </a>
+        <a href="?action=BOOK_BORROW" class="px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200">
+            Book Borrowing
+        </a>
+        <a href="?action=BOOK_RETURN" class="px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200">
+            Book Returns
+        </a>
+        <a href="?action=FINE_PAID" class="px-3 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full hover:bg-yellow-200">
+            Fine Payments
+        </a>
+        <a href="?date_from={{ today|date:'Y-m-d' }}" class="px-3 py-1 text-xs bg-purple-100 text-purple-800 rounded-full hover:bg-purple-200">
+            Today's Events
+        </a>
+    </div>
+</div>
+
+<!-- Audit Logs Table -->
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-bold text-gray-900">Audit Log Entries</h3>
+        <p class="text-sm text-gray-600">
+            {% if logs.paginator.count %}
+                {{ logs.paginator.count }} total entries
+                {% if action_filter or user_filter or date_from or date_to or security_filter %}
+                    (filtered)
+                {% endif %}
+            {% else %}
+                No entries found
+            {% endif %}
+        </p>
+    </div>
+    
+    {% if logs %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP Address</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for log in logs %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ log.timestamp|date:"M d, Y H:i:s" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if log.user %}
+                            <div class="text-sm font-medium text-gray-900">{{ log.user.username }}</div>
+                            <div class="text-sm text-gray-500">{{ log.user.get_role_display }}</div>
+                        {% else %}
+                            <div class="text-sm text-gray-500">Unknown/System</div>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                            {% if 'LOGIN_FAILED' in log.action or 'ACCOUNT_LOCKED' in log.action %}bg-red-100 text-red-800
+                            {% elif 'LOGIN_SUCCESS' in log.action or 'LOGOUT' in log.action %}bg-green-100 text-green-800
+                            {% elif 'BORROW' in log.action or 'RETURN' in log.action %}bg-blue-100 text-blue-800
+                            {% elif 'FINE' in log.action %}bg-yellow-100 text-yellow-800
+                            {% elif 'CREATE' in log.action or 'UPDATE' in log.action %}bg-purple-100 text-purple-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ log.get_action_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-900">
+                        {{ log.details|truncatechars:100 }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ log.ip_address|default:"N/A" }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if logs.has_other_pages %}
+    <div class="px-6 py-4 border-t border-gray-200">
+        <div class="flex justify-between items-center">
+            <div class="text-sm text-gray-700">
+                Page {{ logs.number }} of {{ logs.paginator.num_pages }}
+            </div>
+            <div class="flex space-x-2">
+                {% if logs.has_previous %}
+                <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ logs.previous_page_number }}" 
+                   class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50">Previous</a>
+                {% endif %}
+                
+                {% if logs.has_next %}
+                <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ logs.next_page_number }}" 
+                   class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50">Next</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div class="p-6 text-center text-gray-500">
+        <i class="fas fa-search text-4xl text-gray-300 mb-4"></i>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No Audit Logs Found</h3>
+        <p>No audit logs match your current filters.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Information Panel -->
+<div class="mt-6 bg-blue-50 p-4 rounded-lg">
+    <div class="flex">
+        <div class="flex-shrink-0">
+            <i class="fas fa-info-circle text-blue-400"></i>
+        </div>
+        <div class="ml-3">
+            <h3 class="text-sm font-medium text-blue-800">Audit Logging Information</h3>
+            <div class="mt-2 text-sm text-blue-700">
+                <ul class="list-disc pl-5 space-y-1">
+                    <li><strong>Authentication Events:</strong> All login attempts (successful and failed), logouts, and account lockouts</li>
+                    <li><strong>Book Activities:</strong> Book borrowing, returns, reservations, and library management</li>
+                    <li><strong>Financial Activities:</strong> Fine creation, payments, and waivers</li>
+                    <li><strong>System Activities:</strong> User management, system settings, and administrative actions</li>
+                    <li><strong>Security Monitoring:</strong> Failed login patterns, suspicious activities, and account security events</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

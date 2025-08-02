@@ -66,7 +66,15 @@
         ></i>
         <span class="sidebar-text-item">Borrowing History</span>
       </a>
-
+      <a
+        href="/fines/"
+        class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/fines/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group"
+      >
+        <i
+          class="fas fa-credit-card text-base mr-2 {% if request.path == '/fines/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"
+        ></i>
+        <span class="sidebar-text-item">Pay Fines</span>
+      </a>
       <a
         href="{% url 'users:membership' %}"
         class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/users/membership/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group"
@@ -91,7 +99,7 @@
         <i
           class="fas fa-cog text-base mr-2 {% if request.path == '/profile/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"
         ></i>
-        <span class="sidebar-text-item">Profile</span>
+        <span class="sidebar-text-item">Settings</span>
       </a>
       {% elif user.role == 'librarian' %}
       <div class="px-3 py-2">
@@ -221,11 +229,11 @@
         </p>
       </div>
       <a
-        href="/"
-        class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group"
+        href="{% url 'admin_dashboard:dashboard' %}"
+        class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/admin_dashboard/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group"
       >
         <i
-          class="fas fa-home text-base mr-2 {% if request.path == '/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"
+          class="fas fa-home text-base mr-2 {% if request.path == '/admin_dashboard/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"
         ></i>
         <span class="sidebar-text-item">Admin Dashboard</span>
       </a>
@@ -238,33 +246,13 @@
         </p>
       </div>
       <a
-        href="/admin/users/"
-        class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/admin/users/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group"
+        href="{% url 'admin_dashboard:manage_users' %}"
+        class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/admin_dashboard/users/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group"
       >
         <i
-          class="fas fa-users text-base mr-2 {% if request.path == '/admin/users/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"
+          class="fas fa-users text-base mr-2 {% if request.path == '/admin_dashboard/users/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"
         ></i>
         <span class="sidebar-text-item">Manage Users</span>
-      </a>
-
-      <a
-        href="/admin/books/settings/"
-        class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/admin/books/settings/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group"
-      >
-        <i
-          class="fas fa-book-open text-base mr-2 {% if request.path == '/admin/books/settings/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"
-        ></i>
-        <span class="sidebar-text-item">Global Book Settings</span>
-      </a>
-
-      <a
-        href="/admin/roles/"
-        class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/admin/roles/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group"
-      >
-        <i
-          class="fas fa-lock text-base mr-2 {% if request.path == '/admin/roles/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"
-        ></i>
-        <span class="sidebar-text-item">Roles & Permissions</span>
       </a>
 
       <div class="mt-4 px-3 py-2">
@@ -274,34 +262,45 @@
           System
         </p>
       </div>
-      <a
-        href="/admin/system/"
-        class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/admin/system/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group"
-      >
-        <i
-          class="fas fa-wrench text-base mr-2 {% if request.path == '/admin/system/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"
-        ></i>
-        <span class="sidebar-text-item">System Configuration</span>
-      </a>
 
       <a
-        href="/admin/reports/"
-        class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/admin/reports/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group"
+        href="{% url 'admin_dashboard:reports_dashboard' %}"
+        class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if '/admin_dashboard/reports/' in request.path %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group"
       >
         <i
-          class="fas fa-file-alt text-base mr-2 {% if request.path == '/admin/reports/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"
+          class="fas fa-file-alt text-base mr-2 {% if '/admin_dashboard/reports/' in request.path %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"
         ></i>
         <span class="sidebar-text-item">All Reports</span>
       </a>
 
       <a
-        href="/admin/settings/"
-        class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/admin/settings/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group"
+        href="{% url 'admin_dashboard:system_settings' %}"
+        class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/admin_dashboard/settings/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group"
       >
         <i
-          class="fas fa-cog text-base mr-2 {% if request.path == '/admin/settings/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"
+          class="fas fa-cog text-base mr-2 {% if request.path == '/admin_dashboard/settings/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"
         ></i>
-        <span class="sidebar-text-item">Admin Settings</span>
+        <span class="sidebar-text-item">System Settings</span>
+      </a>
+
+      <a
+        href="{% url 'admin_dashboard:session_management' %}"
+        class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/admin_dashboard/sessions/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group"
+      >
+        <i
+          class="fas fa-clock text-base mr-2 {% if request.path == '/admin_dashboard/sessions/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"
+        ></i>
+        <span class="sidebar-text-item">Session Management</span>
+      </a>
+
+      <a
+        href="{% url 'admin_dashboard:audit_logs' %}"
+        class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/admin_dashboard/audit-logs/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group"
+      >
+        <i
+          class="fas fa-clipboard-list text-base mr-2 {% if request.path == '/admin_dashboard/audit-logs/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"
+        ></i>
+        <span class="sidebar-text-item">Audit Logs</span>
       </a>
       {%elif user.role == 'manager'%}
 
@@ -401,7 +400,15 @@
         ></i>
         <span class="sidebar-text-item">Home</span>
       </a>
-
+      <a
+        href="/search/"
+        class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/search/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group"
+      >
+        <i
+          class="fas fa-search text-base mr-2 {% if request.path == '/search/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"
+        ></i>
+        <span class="sidebar-text-item">Browse Books</span>
+      </a>
       {% endif %}
     </div>
 

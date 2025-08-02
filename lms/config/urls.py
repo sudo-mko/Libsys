@@ -22,6 +22,7 @@ from users.views import profile_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('admin_dashboard/', include('admin_dashboard.urls')),
     path("__reload__/", include("django_browser_reload.urls")),
     path('', include('library.urls')),
     path('users/', include('users.urls')),

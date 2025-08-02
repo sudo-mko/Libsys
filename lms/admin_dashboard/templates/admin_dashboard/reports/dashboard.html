@@ -1,0 +1,240 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block admin_content %}
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-900">Reports Dashboard</h2>
+    <div class="flex space-x-2">
+        <a href="{% url 'admin_dashboard:export_report' %}?type=comprehensive&date_from={{ date_from }}&date_to={{ date_to }}" 
+           class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+            <i class="fas fa-download mr-2"></i>Export All
+        </a>
+    </div>
+</div>
+
+<!-- Date Range Filter -->
+<div class="bg-white p-6 rounded-lg shadow mb-6">
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Report Period</h3>
+    <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+            <label for="date_from" class="block text-sm font-medium text-gray-700">From Date</label>
+            <input type="date" name="date_from" id="date_from" value="{{ date_from|date:'Y-m-d' }}"
+                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        <div>
+            <label for="date_to" class="block text-sm font-medium text-gray-700">To Date</label>
+            <input type="date" name="date_to" id="date_to" value="{{ date_to|date:'Y-m-d' }}"
+                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        <div class="flex items-end">
+            <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <i class="fas fa-filter mr-2"></i>Apply Filter
+            </button>
+        </div>
+        <div class="flex items-end">
+            <a href="{% url 'admin_dashboard:reports_dashboard' %}" class="w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-center">
+                <i class="fas fa-times mr-2"></i>Clear
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Report Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- User Statistics -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fas fa-users text-2xl text-blue-500"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-lg font-medium text-gray-900">Total Users</h3>
+                <p class="text-3xl font-bold text-blue-600">{{ report.user_statistics.total_users }}</p>
+                <p class="text-sm text-gray-500">Active: {{ report.user_statistics.active_users }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Security Events -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fas fa-shield-alt text-2xl text-red-500"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-lg font-medium text-gray-900">Security Events</h3>
+                <p class="text-3xl font-bold text-red-600">{{ report.security_report.total_security_events }}</p>
+                <p class="text-sm text-gray-500">Failed Logins: {{ report.security_report.failed_logins }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- System Activity -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fas fa-chart-line text-2xl text-green-500"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-lg font-medium text-gray-900">Total Activities</h3>
+                <p class="text-3xl font-bold text-green-600">{{ report.activity_report.total_activities }}</p>
+                <p class="text-sm text-gray-500">{{ report.report_period.days }}-day period</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Library Operations -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fas fa-book text-2xl text-purple-500"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-lg font-medium text-gray-900">Book Activities</h3>
+                <p class="text-3xl font-bold text-purple-600">{{ report.library_operations.total_book_activities }}</p>
+                <p class="text-sm text-gray-500">Borrows, Returns, etc.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Reports Navigation -->
+<div class="bg-white p-6 rounded-lg shadow mb-6">
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Detailed Reports</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <a href="{% url 'admin_dashboard:user_statistics_report' %}?date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}" 
+           class="block p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+            <i class="fas fa-users text-blue-500 text-xl mb-2"></i>
+            <h4 class="font-semibold text-gray-900">User Statistics</h4>
+            <p class="text-sm text-gray-600">Detailed user analytics and demographics</p>
+        </a>
+        
+        <a href="{% url 'admin_dashboard:security_report' %}?date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}" 
+           class="block p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+            <i class="fas fa-shield-alt text-red-500 text-xl mb-2"></i>
+            <h4 class="font-semibold text-gray-900">Security Report</h4>
+            <p class="text-sm text-gray-600">Security events and threat analysis</p>
+        </a>
+        
+        <a href="{% url 'admin_dashboard:activity_report' %}?date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}" 
+           class="block p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+            <i class="fas fa-chart-line text-green-500 text-xl mb-2"></i>
+            <h4 class="font-semibold text-gray-900">Activity Report</h4>
+            <p class="text-sm text-gray-600">System usage and activity trends</p>
+        </a>
+        
+        <a href="{% url 'admin_dashboard:library_operations_report' %}?date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}" 
+           class="block p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+            <i class="fas fa-book text-purple-500 text-xl mb-2"></i>
+            <h4 class="font-semibold text-gray-900">Library Operations</h4>
+            <p class="text-sm text-gray-600">Book management and circulation</p>
+        </a>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- User Registration Trends -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">User Registration Trends</h3>
+        <div class="h-64">
+            <canvas id="userRegChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Daily Activity -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Daily Activity</h3>
+        <div class="h-64">
+            <canvas id="activityChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Top Activities and Users -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Top Activities -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Top Activities</h3>
+        <div class="space-y-3">
+            {% for activity in report.activity_report.activities_by_action|slice:":5" %}
+            <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-gray-900">{{ activity.action }}</span>
+                <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">{{ activity.count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Most Active Users -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Most Active Users</h3>
+        <div class="space-y-3">
+            {% for user in report.activity_report.most_active_users|slice:":5" %}
+            <div class="flex justify-between items-center">
+                <div>
+                    <span class="text-sm font-medium text-gray-900">{{ user.user__username }}</span>
+                    <span class="text-xs text-gray-500">({{ user.user__role }})</span>
+                </div>
+                <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">{{ user.activity_count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Charts Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // User Registration Chart
+    const userRegCtx = document.getElementById('userRegChart').getContext('2d');
+    new Chart(userRegCtx, {
+        type: 'line',
+        data: {
+            labels: {{ user_reg_chart.labels|safe }},
+            datasets: [{
+                label: 'New Registrations',
+                data: {{ user_reg_chart.values|safe }},
+                borderColor: 'rgb(59, 130, 246)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Activity Chart
+    const activityCtx = document.getElementById('activityChart').getContext('2d');
+    new Chart(activityCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ activity_chart.labels|safe }},
+            datasets: [{
+                label: 'Daily Activities',
+                data: {{ activity_chart.values|safe }},
+                backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                borderColor: 'rgb(34, 197, 94)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

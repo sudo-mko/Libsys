@@ -1,0 +1,93 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block admin_content %}
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Edit User: {{ user_obj.username }}</h2>
+    <a href="{% url 'admin_dashboard:manage_users' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
+        <i class="fas fa-arrow-left mr-2"></i>Back to Users
+    </a>
+</div>
+
+<div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+    <form method="POST">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Name</label>
+                <input type="text" name="first_name" value="{{ user_obj.first_name }}" 
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Name</label>
+                <input type="text" name="last_name" value="{{ user_obj.last_name }}" 
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
+                <input type="email" name="email" value="{{ user_obj.email }}" 
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Role</label>
+                <select name="role" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                    {% for value, display in role_choices %}
+                    <option value="{{ value }}" {% if user_obj.role == value %}selected{% endif %}>{{ display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Membership Type</label>
+                <select name="membership" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                    <option value="">No Membership</option>
+                    {% for membership in membership_types %}
+                    <option value="{{ membership.id }}" {% if user_obj.membership == membership %}selected{% endif %}>
+                        {{ membership.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="flex items-center">
+                <input type="checkbox" name="is_active" id="is_active" {% if user_obj.is_active %}checked{% endif %}
+                       class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                <label for="is_active" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                    Active Account
+                </label>
+            </div>
+        </div>
+        
+        <div class="mt-6 flex justify-end space-x-3">
+            <a href="{% url 'admin_dashboard:manage_users' %}" 
+               class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md">
+                Cancel
+            </a>
+            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
+                <i class="fas fa-save mr-2"></i>Update User
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- User Statistics -->
+<div class="mt-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">User Information</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+            <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Username</h4>
+            <p class="text-gray-900 dark:text-white">{{ user_obj.username }}</p>
+        </div>
+        <div>
+            <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Date Joined</h4>
+            <p class="text-gray-900 dark:text-white">{{ user_obj.created_at|date:"M d, Y" }}</p>
+        </div>
+        <div>
+            <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Failed Login Attempts</h4>
+            <p class="text-gray-900 dark:text-white">{{ user_obj.failed_login_attempts|default:0 }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
