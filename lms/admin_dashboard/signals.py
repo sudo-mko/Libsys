@@ -61,7 +61,7 @@ def log_borrowing_activity(sender, instance, created, **kwargs):
             pass
     else:
         # Check if this is a return
-        if instance.returned_date and not getattr(instance, '_logged_return', False):
+        if instance.return_date and not getattr(instance, '_logged_return', False):
             try:
                 AuditLog.objects.create(
                     user=instance.user,

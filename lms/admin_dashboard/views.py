@@ -9,6 +9,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.conf import settings
 from users.models import MembershipType
 from .models import SystemSetting, AuditLog
+from .signals import get_client_ip
 from datetime import datetime, timedelta
 from django.utils import timezone
 from .reports import ReportGenerator, generate_chart_data, export_report_to_csv

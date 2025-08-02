@@ -61,9 +61,9 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
     'admin_dashboard.middleware.SessionTimeoutMiddleware',
     'admin_dashboard.middleware.PasswordPolicyMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
@@ -154,14 +154,14 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 
-NPM_BIN_PATH = r"/usr/local/bin/npm"
+NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
 
 # Account Lock Settings
 ACCOUNT_LOCK_SETTINGS = {
     'MAX_FAILED_ATTEMPTS': 5,
     'LOCK_DURATION_MINUTES': 5,
     'WARNING_THRESHOLD': 3,
-    'AFFECTED_USER_ROLES': ['member', 'librarian', 'manager', 'admin']
+    'AFFECTED_USER_ROLES': ['member', 'librarian', 'manager']
 }
 
 # Session Timeout Settings (in minutes)

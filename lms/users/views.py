@@ -14,7 +14,7 @@ def register_view(request):
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             messages.success(request, "Registration successful!")
             return redirect('library:home')
         else:
@@ -56,7 +56,7 @@ def login_view(request):
             if authenticated_user is not None:
                 # Reset lock status on successful login (but keep failed attempts for analytics)
                 authenticated_user.reset_lock_status()
-                login(request, authenticated_user)
+                login(request, authenticated_user, backend='django.contrib.auth.backends.ModelBackend')
                 messages.success(request, f"Welcome back, {username}!")
                 return redirect('library:home')
             else:
