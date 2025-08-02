@@ -338,7 +338,7 @@
         <span class="sidebar-text-item">Manage Users</span>
       </a>
       <a
-        href="/admin/branches/"
+        href="{% url 'branches:manage_branches' %}"
         class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/admin/branches/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group"
       >
         <i

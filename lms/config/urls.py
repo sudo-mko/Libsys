@@ -28,6 +28,7 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('reservations/', include('reservations.urls')),
     path('borrow/', include('borrow.urls')),
+    path('branches/', include('branches.urls')),
     path('profile/', profile_view, name='profile-direct'),
 ]
 
