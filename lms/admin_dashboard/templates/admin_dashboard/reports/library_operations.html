@@ -1,0 +1,404 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block admin_content %}
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-900">Library Operations Report</h2>
+    <div class="flex space-x-2">
+        <a href="{% url 'admin_dashboard:reports_dashboard' %}" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Reports
+        </a>
+        <a href="{% url 'admin_dashboard:export_report' %}?type=library{% if date_from %}&date_from={{ date_from|date:'Y-m-d' }}{% endif %}{% if date_to %}&date_to={{ date_to|date:'Y-m-d' }}{% endif %}" 
+           class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+            <i class="fas fa-download mr-2"></i>Export CSV
+        </a>
+    </div>
+</div>
+
+<!-- Date Range Info -->
+{% if date_from and date_to %}
+<div class="bg-blue-50 p-4 rounded-lg mb-6">
+    <h3 class="text-sm font-medium text-blue-800">Report Period</h3>
+    <p class="text-blue-700">{{ date_from }} to {{ date_to }}</p>
+</div>
+{% endif %}
+
+<!-- Operations Overview -->
+<div class="bg-white p-6 rounded-lg shadow mb-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h3 class="text-2xl font-bold text-gray-900">{{ report.total_book_activities }}</h3>
+            <p class="text-gray-600">Total Book Activities</p>
+        </div>
+        <div class="flex-shrink-0">
+            <i class="fas fa-book text-4xl text-purple-500"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Book Activities Breakdown -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Book Operations -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Book Operations</h3>
+        {% if report.book_activities_by_type %}
+        <div class="space-y-4">
+            {% for activity in report.book_activities_by_type %}
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full 
+                        {% if 'BORROW' in activity.action %}bg-blue-100 text-blue-800
+                        {% elif 'RETURN' in activity.action %}bg-green-100 text-green-800
+                        {% elif 'RESERVATION' in activity.action %}bg-yellow-100 text-yellow-800
+                        {% else %}bg-purple-100 text-purple-800{% endif %}">
+                        {% if activity.action == 'BOOK_BORROW' %}Book Borrowed
+                        {% elif activity.action == 'BOOK_RETURN' %}Book Returned
+                        {% elif activity.action == 'RESERVATION_CREATE' %}Reservation Created
+                        {% elif activity.action == 'RESERVATION_APPROVE' %}Reservation Approved
+                        {% else %}{{ activity.action|title }}{% endif %}
+                    </span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-24 bg-gray-200 rounded-full h-2 mr-3">
+                        <div class="bg-purple-600 h-2 rounded-full" 
+                             style="width: {% widthratio activity.count report.total_book_activities 100 %}%"></div>
+                    </div>
+                    <span class="text-lg font-bold text-gray-900">{{ activity.count }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-sm">No book activities recorded in this period</p>
+        {% endif %}
+    </div>
+    
+    <!-- Fine Operations -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Fine Operations</h3>
+        {% if report.fine_activities_by_type %}
+        <div class="space-y-4">
+            {% for activity in report.fine_activities_by_type %}
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full 
+                        {% if 'CREATE' in activity.action %}bg-red-100 text-red-800
+                        {% elif 'PAID' in activity.action %}bg-green-100 text-green-800
+                        {% elif 'WAIVE' in activity.action %}bg-yellow-100 text-yellow-800
+                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {% if activity.action == 'FINE_CREATE' %}Fine Created
+                        {% elif activity.action == 'FINE_PAID' %}Fine Paid
+                        {% elif activity.action == 'FINE_WAIVE' %}Fine Waived
+                        {% else %}{{ activity.action|title }}{% endif %}
+                    </span>
+                </div>
+                <span class="text-lg font-bold text-gray-900">{{ activity.count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-sm">No fine activities recorded in this period</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Library Statistics Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <!-- Book Borrowings -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fas fa-book-reader text-2xl text-blue-500"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-lg font-medium text-gray-900">Books Borrowed</h3>
+                <p class="text-3xl font-bold text-blue-600">
+                    {% for activity in report.book_activities_by_type %}
+                        {% if activity.action == 'BOOK_BORROW' %}{{ activity.count }}{% endif %}
+                    {% empty %}0{% endfor %}
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Book Returns -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fas fa-undo text-2xl text-green-500"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-lg font-medium text-gray-900">Books Returned</h3>
+                <p class="text-3xl font-bold text-green-600">
+                    {% for activity in report.book_activities_by_type %}
+                        {% if activity.action == 'BOOK_RETURN' %}{{ activity.count }}{% endif %}
+                    {% empty %}0{% endfor %}
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reservations -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fas fa-bookmark text-2xl text-yellow-500"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-lg font-medium text-gray-900">Reservations</h3>
+                <p class="text-3xl font-bold text-yellow-600">
+                    {% for activity in report.book_activities_by_type %}
+                        {% if activity.action == 'RESERVATION_CREATE' %}{{ activity.count }}{% endif %}
+                    {% empty %}0{% endfor %}
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Fines Created -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fas fa-dollar-sign text-2xl text-red-500"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-lg font-medium text-gray-900">Fines Created</h3>
+                <p class="text-3xl font-bold text-red-600">
+                    {% for activity in report.fine_activities_by_type %}
+                        {% if activity.action == 'FINE_CREATE' %}{{ activity.count }}{% endif %}
+                    {% empty %}0{% endfor %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Circulation Analysis -->
+<div class="bg-white p-6 rounded-lg shadow mb-6">
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Circulation Analysis</h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Borrowing Trends -->
+        <div class="p-4 border rounded-lg">
+            <h4 class="font-semibold text-gray-700 mb-3">Borrowing Trends</h4>
+            {% for activity in report.book_activities_by_type %}
+                {% if activity.action == 'BOOK_BORROW' %}
+                    {% if activity.count > 50 %}
+                        <div class="flex items-center text-green-600">
+                            <i class="fas fa-arrow-up mr-2"></i>
+                            <span class="font-bold">HIGH ACTIVITY</span>
+                        </div>
+                        <p class="text-sm text-green-600 mt-1">{{ activity.count }} books borrowed</p>
+                    {% elif activity.count > 20 %}
+                        <div class="flex items-center text-yellow-600">
+                            <i class="fas fa-minus mr-2"></i>
+                            <span class="font-bold">MODERATE ACTIVITY</span>
+                        </div>
+                        <p class="text-sm text-yellow-600 mt-1">{{ activity.count }} books borrowed</p>
+                    {% else %}
+                        <div class="flex items-center text-red-600">
+                            <i class="fas fa-arrow-down mr-2"></i>
+                            <span class="font-bold">LOW ACTIVITY</span>
+                        </div>
+                        <p class="text-sm text-red-600 mt-1">{{ activity.count }} books borrowed</p>
+                    {% endif %}
+                {% endif %}
+            {% empty %}
+                <div class="flex items-center text-gray-600">
+                    <i class="fas fa-minus-circle mr-2"></i>
+                    <span class="font-bold">NO ACTIVITY</span>
+                </div>
+                <p class="text-sm text-gray-600 mt-1">No borrowing activity</p>
+            {% endfor %}
+        </div>
+        
+        <!-- Return Rate -->
+        <div class="p-4 border rounded-lg">
+            <h4 class="font-semibold text-gray-700 mb-3">Return Rate</h4>
+            {% with borrowed=0 returned=0 %}
+                {% for activity in report.book_activities_by_type %}
+                    {% if activity.action == 'BOOK_BORROW' %}{% with borrowed=activity.count %}{% endwith %}{% endif %}
+                    {% if activity.action == 'BOOK_RETURN' %}{% with returned=activity.count %}{% endwith %}{% endif %}
+                {% endfor %}
+                
+                {% if borrowed > 0 %}
+                    {% widthratio returned borrowed 100 as return_rate %}
+                    {% if return_rate >= 80 %}
+                        <div class="flex items-center text-green-600">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            <span class="font-bold">{{ return_rate }}% RETURNED</span>
+                        </div>
+                        <p class="text-sm text-green-600 mt-1">Excellent return rate</p>
+                    {% elif return_rate >= 60 %}
+                        <div class="flex items-center text-yellow-600">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            <span class="font-bold">{{ return_rate }}% RETURNED</span>
+                        </div>
+                        <p class="text-sm text-yellow-600 mt-1">Good return rate</p>
+                    {% else %}
+                        <div class="flex items-center text-red-600">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            <span class="font-bold">{{ return_rate }}% RETURNED</span>
+                        </div>
+                        <p class="text-sm text-red-600 mt-1">Low return rate - follow up needed</p>
+                    {% endif %}
+                {% else %}
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-minus mr-2"></i>
+                        <span class="font-bold">N/A</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1">No borrowing data</p>
+                {% endif %}
+            {% endwith %}
+        </div>
+        
+        <!-- Fine Collection -->
+        <div class="p-4 border rounded-lg">
+            <h4 class="font-semibold text-gray-700 mb-3">Fine Collection</h4>
+            {% with fines_created=0 fines_paid=0 %}
+                {% for activity in report.fine_activities_by_type %}
+                    {% if activity.action == 'FINE_CREATE' %}{% with fines_created=activity.count %}{% endwith %}{% endif %}
+                    {% if activity.action == 'FINE_PAID' %}{% with fines_paid=activity.count %}{% endwith %}{% endif %}
+                {% endfor %}
+                
+                {% if fines_created > 0 %}
+                    {% widthratio fines_paid fines_created 100 as collection_rate %}
+                    {% if collection_rate >= 80 %}
+                        <div class="flex items-center text-green-600">
+                            <i class="fas fa-money-check-alt mr-2"></i>
+                            <span class="font-bold">{{ collection_rate }}% COLLECTED</span>
+                        </div>
+                        <p class="text-sm text-green-600 mt-1">Excellent collection rate</p>
+                    {% elif collection_rate >= 60 %}
+                        <div class="flex items-center text-yellow-600">
+                            <i class="fas fa-coins mr-2"></i>
+                            <span class="font-bold">{{ collection_rate }}% COLLECTED</span>
+                        </div>
+                        <p class="text-sm text-yellow-600 mt-1">Good collection rate</p>
+                    {% else %}
+                        <div class="flex items-center text-red-600">
+                            <i class="fas fa-credit-card mr-2"></i>
+                            <span class="font-bold">{{ collection_rate }}% COLLECTED</span>
+                        </div>
+                        <p class="text-sm text-red-600 mt-1">Low collection rate - reminders needed</p>
+                    {% endif %}
+                {% else %}
+                    <div class="flex items-center text-green-600">
+                        <i class="fas fa-smile mr-2"></i>
+                        <span class="font-bold">NO FINES</span>
+                    </div>
+                    <p class="text-sm text-green-600 mt-1">No fines created this period</p>
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+</div>
+
+<!-- Operational Insights -->
+<div class="bg-white p-6 rounded-lg shadow">
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Operational Insights</h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Performance Metrics -->
+        <div>
+            <h4 class="font-semibold text-gray-700 mb-3">Performance Metrics</h4>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                    <span class="text-sm font-medium text-blue-800">Total Circulation</span>
+                    <span class="text-lg font-bold text-blue-900">{{ report.total_book_activities }}</span>
+                </div>
+                
+                {% for activity in report.book_activities_by_type %}
+                    {% if activity.action == 'BOOK_BORROW' %}
+                    <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                        <span class="text-sm font-medium text-green-800">Books Borrowed</span>
+                        <span class="text-lg font-bold text-green-900">{{ activity.count }}</span>
+                    </div>
+                    {% endif %}
+                    {% if activity.action == 'BOOK_RETURN' %}
+                    <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                        <span class="text-sm font-medium text-purple-800">Books Returned</span>
+                        <span class="text-lg font-bold text-purple-900">{{ activity.count }}</span>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+                
+                {% for activity in report.fine_activities_by_type %}
+                    {% if activity.action == 'FINE_PAID' %}
+                    <div class="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+                        <span class="text-sm font-medium text-yellow-800">Fines Collected</span>
+                        <span class="text-lg font-bold text-yellow-900">{{ activity.count }}</span>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Recommendations -->
+        <div>
+            <h4 class="font-semibold text-gray-700 mb-3">Recommendations</h4>
+            <div class="space-y-3 text-sm">
+                {% for activity in report.book_activities_by_type %}
+                    {% if activity.action == 'BOOK_BORROW' and activity.count < 10 %}
+                    <div class="p-3 bg-red-50 rounded-lg">
+                        <div class="text-red-600">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                            <strong>Low Borrowing Activity</strong>
+                        </div>
+                        <p class="text-red-600 mt-1">Consider promotional campaigns to increase book circulation</p>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+                
+                {% for activity in report.fine_activities_by_type %}
+                    {% if activity.action == 'FINE_CREATE' and activity.count > 20 %}
+                    <div class="p-3 bg-orange-50 rounded-lg">
+                        <div class="text-orange-600">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            <strong>High Fine Creation</strong>
+                        </div>
+                        <p class="text-orange-600 mt-1">Review lending policies or send more reminder notifications</p>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+                
+                <div class="p-3 bg-blue-50 rounded-lg">
+                    <div class="text-blue-600">
+                        <i class="fas fa-lightbulb mr-1"></i>
+                        <strong>System Enhancement</strong>
+                    </div>
+                    <p class="text-blue-600 mt-1">Consider automated reminder systems for due dates</p>
+                </div>
+                
+                <div class="p-3 bg-green-50 rounded-lg">
+                    <div class="text-green-600">
+                        <i class="fas fa-chart-line mr-1"></i>
+                        <strong>Analytics Active</strong>
+                    </div>
+                    <p class="text-green-600 mt-1">Library operations are being monitored effectively</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Library Operations Information -->
+<div class="mt-6 bg-purple-50 p-4 rounded-lg">
+    <div class="flex">
+        <div class="flex-shrink-0">
+            <i class="fas fa-info-circle text-purple-400"></i>
+        </div>
+        <div class="ml-3">
+            <h3 class="text-sm font-medium text-purple-800">Library Operations Information</h3>
+            <div class="mt-2 text-sm text-purple-700">
+                <ul class="list-disc pl-5 space-y-1">
+                    <li>All book circulation activities are tracked automatically</li>
+                    <li>Fine management helps maintain library policies</li>
+                    <li>Reservation system optimizes book availability</li>
+                    <li>Return rate monitoring helps identify issues early</li>
+                    <li>Operational reports support library management decisions</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

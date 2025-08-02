@@ -1,0 +1,261 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block admin_content %}
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-900">Security Report</h2>
+    <div class="flex space-x-2">
+        <a href="{% url 'admin_dashboard:reports_dashboard' %}" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Reports
+        </a>
+        <a href="{% url 'admin_dashboard:export_report' %}?type=security{% if date_from %}&date_from={{ date_from|date:'Y-m-d' }}{% endif %}{% if date_to %}&date_to={{ date_to|date:'Y-m-d' }}{% endif %}" 
+           class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+            <i class="fas fa-download mr-2"></i>Export CSV
+        </a>
+    </div>
+</div>
+
+<!-- Date Range Info -->
+{% if date_from and date_to %}
+<div class="bg-blue-50 p-4 rounded-lg mb-6">
+    <h3 class="text-sm font-medium text-blue-800">Report Period</h3>
+    <p class="text-blue-700">{{ date_from }} to {{ date_to }}</p>
+</div>
+{% endif %}
+
+<!-- Security Overview Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-lg shadow">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fas fa-shield-alt text-2xl text-red-500"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-lg font-medium text-gray-900">Security Events</h3>
+                <p class="text-3xl font-bold text-red-600">{{ report.total_security_events }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white p-6 rounded-lg shadow">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-triangle text-2xl text-orange-500"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-lg font-medium text-gray-900">Failed Logins</h3>
+                <p class="text-3xl font-bold text-orange-600">{{ report.failed_logins }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white p-6 rounded-lg shadow">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fas fa-lock text-2xl text-red-500"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-lg font-medium text-gray-900">Account Lockouts</h3>
+                <p class="text-3xl font-bold text-red-600">{{ report.account_lockouts }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white p-6 rounded-lg shadow">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fas fa-globe text-2xl text-purple-500"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-lg font-medium text-gray-900">Threat IPs</h3>
+                <p class="text-3xl font-bold text-purple-600">{{ report.threat_ips|length }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Security Events Breakdown -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Security Events by Type</h3>
+        {% if report.security_by_type %}
+        <div class="space-y-4">
+            {% for event in report.security_by_type %}
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full 
+                        {% if 'FAILED' in event.action %}bg-red-100 text-red-800
+                        {% elif 'LOCKED' in event.action %}bg-orange-100 text-orange-800
+                        {% elif 'TIMEOUT' in event.action %}bg-yellow-100 text-yellow-800
+                        {% else %}bg-purple-100 text-purple-800{% endif %}">
+                        {{ event.action|title }}
+                    </span>
+                </div>
+                <span class="text-xl font-bold text-gray-900">{{ event.count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-sm">No security events in this period</p>
+        {% endif %}
+    </div>
+    
+    <!-- Top Threat IPs -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Top Threat IP Addresses</h3>
+        {% if report.threat_ips %}
+        <div class="space-y-3">
+            {% for ip_data in report.threat_ips|slice:":10" %}
+            <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                <div>
+                    <span class="text-sm font-medium text-red-900">{{ ip_data.ip_address }}</span>
+                    <span class="text-xs text-red-600 block">{{ ip_data.attempt_count }} failed attempts</span>
+                </div>
+                <span class="px-2 py-1 text-xs bg-red-200 text-red-800 rounded-full">
+                    High Risk
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-sm">No threat IPs detected in this period</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Security Analytics -->
+<div class="bg-white p-6 rounded-lg shadow mb-6">
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Security Analytics</h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Risk Level Assessment -->
+        <div class="p-4 border rounded-lg">
+            <h4 class="font-semibold text-gray-700 mb-3">Risk Level Assessment</h4>
+            {% if report.failed_logins > 100 %}
+                <div class="flex items-center text-red-600">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <span class="font-bold">HIGH RISK</span>
+                </div>
+                <p class="text-sm text-red-600 mt-1">Excessive failed login attempts detected</p>
+            {% elif report.failed_logins > 50 %}
+                <div class="flex items-center text-orange-600">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span class="font-bold">MEDIUM RISK</span>
+                </div>
+                <p class="text-sm text-orange-600 mt-1">Moderate security activity</p>
+            {% else %}
+                <div class="flex items-center text-green-600">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    <span class="font-bold">LOW RISK</span>
+                </div>
+                <p class="text-sm text-green-600 mt-1">Normal security activity</p>
+            {% endif %}
+        </div>
+        
+        <!-- Security Metrics -->
+        <div class="p-4 border rounded-lg">
+            <h4 class="font-semibold text-gray-700 mb-3">Security Metrics</h4>
+            <div class="space-y-2">
+                <div class="flex justify-between">
+                    <span class="text-sm text-gray-600">Success Rate:</span>
+                    <span class="text-sm font-medium">
+                        {% if report.failed_logins > 0 %}
+                            {% widthratio report.failed_logins report.total_security_events 100 as failure_rate %}
+                            {{ failure_rate|sub:100|default:0 }}%
+                        {% else %}
+                            100%
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-sm text-gray-600">Lockout Rate:</span>
+                    <span class="text-sm font-medium">{{ report.account_lockouts|default:0 }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-sm text-gray-600">Unique Threat IPs:</span>
+                    <span class="text-sm font-medium">{{ report.threat_ips|length }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recommendations -->
+        <div class="p-4 border rounded-lg">
+            <h4 class="font-semibold text-gray-700 mb-3">Recommendations</h4>
+            <div class="space-y-2 text-sm">
+                {% if report.failed_logins > 100 %}
+                    <div class="text-red-600">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        Consider IP blocking for repeat offenders
+                    </div>
+                {% endif %}
+                {% if report.account_lockouts > 10 %}
+                    <div class="text-orange-600">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Review account lockout policies
+                    </div>
+                {% endif %}
+                {% if report.threat_ips|length > 5 %}
+                    <div class="text-yellow-600">
+                        <i class="fas fa-shield-alt mr-1"></i>
+                        Enable geographic restrictions
+                    </div>
+                {% endif %}
+                <div class="text-blue-600">
+                    <i class="fas fa-check mr-1"></i>
+                    Regular security monitoring active
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Security Events -->
+{% if report.security_by_type %}
+<div class="bg-white p-6 rounded-lg shadow">
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Security Events Timeline</h3>
+    <div class="space-y-4">
+        {% for event in report.security_by_type %}
+        <div class="border-l-4 pl-4 py-2 
+            {% if 'FAILED' in event.action %}border-red-500 bg-red-50
+            {% elif 'LOCKED' in event.action %}border-orange-500 bg-orange-50
+            {% elif 'TIMEOUT' in event.action %}border-yellow-500 bg-yellow-50
+            {% else %}border-purple-500 bg-purple-50{% endif %}">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h4 class="font-semibold text-gray-900">{{ event.action|title }}</h4>
+                    <p class="text-sm text-gray-600">{{ event.count }} occurrences</p>
+                </div>
+                <span class="px-3 py-1 text-sm font-medium rounded-full
+                    {% if 'FAILED' in event.action %}bg-red-100 text-red-800
+                    {% elif 'LOCKED' in event.action %}bg-orange-100 text-orange-800
+                    {% elif 'TIMEOUT' in event.action %}bg-yellow-100 text-yellow-800
+                    {% else %}bg-purple-100 text-purple-800{% endif %}">
+                    {{ event.count }}
+                </span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Security Information -->
+<div class="mt-6 bg-blue-50 p-4 rounded-lg">
+    <div class="flex">
+        <div class="flex-shrink-0">
+            <i class="fas fa-info-circle text-blue-400"></i>
+        </div>
+        <div class="ml-3">
+            <h3 class="text-sm font-medium text-blue-800">Security Monitoring Information</h3>
+            <div class="mt-2 text-sm text-blue-700">
+                <ul class="list-disc pl-5 space-y-1">
+                    <li>All security events are automatically logged and monitored</li>
+                    <li>Failed login attempts trigger automatic account protection</li>
+                    <li>Suspicious IP addresses are tracked for pattern analysis</li>
+                    <li>Account lockouts are automatically logged for audit purposes</li>
+                    <li>Security reports help identify potential threats and vulnerabilities</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

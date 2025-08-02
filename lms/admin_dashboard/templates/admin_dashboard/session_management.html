@@ -1,0 +1,140 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block admin_content %}
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-900">Session Management</h2>
+</div>
+
+<!-- Session Timeout Configuration -->
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-bold text-gray-900">User Session Timeout Settings</h3>
+        <p class="text-sm text-gray-600">Configure individual session timeout for each user (5-480 minutes)</p>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Activity</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Timeout</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">New Timeout</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for item in users_with_sessions %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-8 w-8">
+                                <div class="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
+                                    <i class="fas fa-user text-gray-600 text-sm"></i>
+                                </div>
+                            </div>
+                            <div class="ml-3">
+                                <div class="text-sm font-medium text-gray-900">{{ item.user.get_full_name|default:item.user.username }}</div>
+                                <div class="text-sm text-gray-500">{{ item.user.email }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                            {% if item.user.role == 'admin' %}bg-red-100 text-red-800
+                            {% elif item.user.role == 'manager' %}bg-yellow-100 text-yellow-800
+                            {% elif item.user.role == 'librarian' %}bg-green-100 text-green-800
+                            {% else %}bg-blue-100 text-blue-800{% endif %}">
+                            {{ item.user.get_role_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if item.is_active %}
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                <i class="fas fa-circle text-green-400 mr-1 text-xs"></i>
+                                Online
+                            </span>
+                        {% else %}
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                <i class="fas fa-circle text-gray-400 mr-1 text-xs"></i>
+                                Offline
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {% if item.last_activity %}
+                            {{ item.last_activity|timesince }} ago
+                        {% else %}
+                            Never
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {{ item.current_timeout }} minutes
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <form method="POST" class="flex items-center space-x-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="update_timeout">
+                            <input type="hidden" name="user_id" value="{{ item.user.id }}">
+                            <input type="number" 
+                                   name="timeout_minutes" 
+                                   value="{{ item.current_timeout }}"
+                                   min="5" 
+                                   max="480"
+                                   class="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <span class="text-xs text-gray-500">min</span>
+                        </form>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button type="submit" 
+                                form="timeout-form-{{ item.user.id }}"
+                                class="text-blue-600 hover:text-blue-900">
+                            <i class="fas fa-save"></i> Update
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Information Panel -->
+<div class="mt-6 bg-blue-50 p-4 rounded-lg">
+    <div class="flex">
+        <div class="flex-shrink-0">
+            <i class="fas fa-info-circle text-blue-400"></i>
+        </div>
+        <div class="ml-3">
+            <h3 class="text-sm font-medium text-blue-800">Session Timeout Information</h3>
+            <div class="mt-2 text-sm text-blue-700">
+                <ul class="list-disc pl-5 space-y-1">
+                    <li><strong>Force password change every 6 months for Admin and Manager accounts</strong> - Automatically enforced</li>
+                    <li><strong>Auto-logout inactive users after configurable timeout</strong> - Default 15 minutes, customizable per user</li>
+                    <li>Timeout range: 5 minutes to 8 hours (480 minutes)</li>
+                    <li>Changes apply immediately to active sessions</li>
+                    <li>Online status shows current active sessions</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Fix form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('form[method="POST"]');
+    forms.forEach((form, index) => {
+        const button = form.closest('tr').querySelector('button[type="submit"]');
+        if (button) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                form.submit();
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

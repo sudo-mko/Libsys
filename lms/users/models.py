@@ -34,6 +34,10 @@ class User(AbstractUser):
     account_locked_until = models.DateTimeField(null=True, blank=True)
     last_failed_attempt = models.DateTimeField(null=True, blank=True)
     
+    # Password policy fields
+    last_password_change = models.DateTimeField(null=True, blank=True)
+    password_change_required = models.BooleanField(default=False)
+    
     # Add related_name attributes to avoid clash
     groups = models.ManyToManyField(
         'auth.Group',
@@ -97,6 +101,30 @@ class User(AbstractUser):
     def reset_lock_status(self):
         """Reset account lock status (for successful login or manual unlock)"""
         self.account_locked_until = None
+        self.save()
+    
+    def is_password_expired(self):
+        """Check if password has expired for admin/manager users"""
+        if self.role not in ['admin', 'manager']:
+            return False
+            
+        if not self.last_password_change:
+            # If no password change recorded, assume it needs to be changed
+            return True
+            
+        # Check if 6 months have passed
+        expiry_date = self.last_password_change + timedelta(days=180)  # 6 months
+        return timezone.now() > expiry_date
+    
+    def mark_password_changed(self):
+        """Mark that password was changed"""
+        self.last_password_change = timezone.now()
+        self.password_change_required = False
+        self.save()
+    
+    def force_password_change(self):
+        """Force user to change password on next login"""
+        self.password_change_required = True
         self.save()
 
 

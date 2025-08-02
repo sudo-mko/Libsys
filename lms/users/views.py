@@ -14,9 +14,15 @@ def register_view(request):
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             messages.success(request, "Registration successful!")
-            return redirect('library:home')
+            
+            # Redirect admin/manager users to admin dashboard
+            if user.role in ['admin', 'manager']:
+                from django.urls import reverse
+                return redirect(reverse('admin_dashboard:dashboard'))
+            else:
+                return redirect('library:home')
         else:
             messages.error(request, "Registration failed. Please correct the errors.")
     else:
@@ -56,9 +62,15 @@ def login_view(request):
             if authenticated_user is not None:
                 # Reset lock status on successful login (but keep failed attempts for analytics)
                 authenticated_user.reset_lock_status()
-                login(request, authenticated_user)
+                login(request, authenticated_user, backend='django.contrib.auth.backends.ModelBackend')
                 messages.success(request, f"Welcome back, {username}!")
-                return redirect('library:home')
+                
+                # Redirect admin/manager users to admin dashboard
+                if authenticated_user.role in ['admin', 'manager']:
+                    from django.urls import reverse
+                    return redirect(reverse('admin_dashboard:dashboard'))
+                else:
+                    return redirect('library:home')
             else:
                 # Invalid credentials - increment failed attempts for the existing user
                 if user:  # user was already fetched at the top
