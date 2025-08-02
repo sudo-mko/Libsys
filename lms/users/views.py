@@ -17,8 +17,8 @@ def register_view(request):
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             messages.success(request, "Registration successful!")
             
-            # Redirect admin/manager users to admin dashboard
-            if user.role in ['admin', 'manager']:
+            # Redirect admin users to admin dashboard, others to library home
+            if user.role == 'admin':
                 from django.urls import reverse
                 return redirect(reverse('admin_dashboard:dashboard'))
             else:
@@ -65,8 +65,8 @@ def login_view(request):
                 login(request, authenticated_user, backend='django.contrib.auth.backends.ModelBackend')
                 messages.success(request, f"Welcome back, {username}!")
                 
-                # Redirect admin/manager users to admin dashboard
-                if authenticated_user.role in ['admin', 'manager']:
+                # Redirect admin users to admin dashboard, others to library home
+                if authenticated_user.role == 'admin':
                     from django.urls import reverse
                     return redirect(reverse('admin_dashboard:dashboard'))
                 else:
