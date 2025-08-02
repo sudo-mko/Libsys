@@ -18,6 +18,47 @@ from functools import wraps
 
 User = get_user_model()
 
+def parse_date_flexibly(date_string):
+    """
+    Parse date string in various formats and return datetime object
+    """
+    if not date_string:
+        return None
+    
+    # List of possible date formats
+    date_formats = [
+        '%Y-%m-%d',           # 2025-07-03
+        '%m/%d/%Y',           # 07/03/2025
+        '%m/%d/%y',           # 07/03/25
+        '%B %d, %Y',          # July 3, 2025
+        '%b %d, %Y',          # Jul 3, 2025
+        '%B %d %Y',           # July 3 2025
+        '%b %d %Y',           # Jul 3 2025
+        '%d %B %Y',           # 3 July 2025
+        '%d %b %Y',           # 3 Jul 2025
+        '%d/%m/%Y',           # 03/07/2025
+        '%Y-%m-%d %H:%M:%S',  # With time
+    ]
+    
+    # Clean up the date string
+    date_string = date_string.strip()
+    
+    # Handle abbreviated months with periods (Aug. -> Aug)
+    date_string = date_string.replace('Jan.', 'Jan').replace('Feb.', 'Feb').replace('Mar.', 'Mar')
+    date_string = date_string.replace('Apr.', 'Apr').replace('May.', 'May').replace('Jun.', 'Jun')
+    date_string = date_string.replace('Jul.', 'Jul').replace('Aug.', 'Aug').replace('Sep.', 'Sep')
+    date_string = date_string.replace('Oct.', 'Oct').replace('Nov.', 'Nov').replace('Dec.', 'Dec')
+    
+    # Try each format until one works
+    for date_format in date_formats:
+        try:
+            return datetime.strptime(date_string, date_format)
+        except ValueError:
+            continue
+    
+    # If all formats fail, raise an error with helpful message
+    raise ValueError(f"Unable to parse date '{date_string}'. Supported formats include: YYYY-MM-DD, MM/DD/YYYY, Month DD, YYYY")
+
 def log_audit_event(user, action, details, ip_address=None, request=None):
     """
     Utility function to log audit events
@@ -358,7 +399,7 @@ def audit_logs(request):
     
     if date_from:
         try:
-            from_date = datetime.strptime(date_from, '%Y-%m-%d')
+            from_date = parse_date_flexibly(date_from)
             # Make timezone aware
             from_date = timezone.make_aware(from_date.replace(hour=0, minute=0, second=0))
             logs = logs.filter(timestamp__gte=from_date)
@@ -367,7 +408,7 @@ def audit_logs(request):
     
     if date_to:
         try:
-            to_date = datetime.strptime(date_to, '%Y-%m-%d')
+            to_date = parse_date_flexibly(date_to)
             # Make timezone aware and set to end of day
             to_date = timezone.make_aware(to_date.replace(hour=23, minute=59, second=59))
             logs = logs.filter(timestamp__lte=to_date)
@@ -575,12 +616,20 @@ def reports_dashboard(request):
     if not date_from:
         date_from = (timezone.now() - timedelta(days=30)).date()
     else:
-        date_from = datetime.strptime(date_from, '%Y-%m-%d').date()
+        try:
+            date_from = parse_date_flexibly(date_from).date()
+        except ValueError as e:
+            messages.error(request, f"Invalid from date format: {e}")
+            date_from = (timezone.now() - timedelta(days=30)).date()
     
     if not date_to:
         date_to = timezone.now().date()
     else:
-        date_to = datetime.strptime(date_to, '%Y-%m-%d').date()
+        try:
+            date_to = parse_date_flexibly(date_to).date()
+        except ValueError as e:
+            messages.error(request, f"Invalid to date format: {e}")
+            date_to = timezone.now().date()
     
     # Convert to timezone-aware datetime
     date_from_dt = timezone.make_aware(datetime.combine(date_from, datetime.min.time()))
@@ -619,12 +668,20 @@ def user_statistics_report(request):
     if not date_from:
         date_from_dt = timezone.now() - timedelta(days=30)
     else:
-        date_from_dt = timezone.make_aware(datetime.strptime(date_from, '%Y-%m-%d'))
+        try:
+            date_from_dt = timezone.make_aware(parse_date_flexibly(date_from))
+        except ValueError as e:
+            messages.error(request, f"Invalid from date format: {e}")
+            return redirect('admin_dashboard:reports_dashboard')
     
     if not date_to:
         date_to_dt = timezone.now()
     else:
-        date_to_dt = timezone.make_aware(datetime.strptime(date_to, '%Y-%m-%d'))
+        try:
+            date_to_dt = timezone.make_aware(parse_date_flexibly(date_to))
+        except ValueError as e:
+            messages.error(request, f"Invalid to date format: {e}")
+            return redirect('admin_dashboard:reports_dashboard')
     
     report_generator = ReportGenerator(date_from_dt, date_to_dt)
     report_data = report_generator.get_user_statistics_report()
@@ -647,12 +704,20 @@ def security_report(request):
     if not date_from:
         date_from_dt = timezone.now() - timedelta(days=30)
     else:
-        date_from_dt = timezone.make_aware(datetime.strptime(date_from, '%Y-%m-%d'))
+        try:
+            date_from_dt = timezone.make_aware(parse_date_flexibly(date_from))
+        except ValueError as e:
+            messages.error(request, f"Invalid from date format: {e}")
+            return redirect('admin_dashboard:reports_dashboard')
     
     if not date_to:
         date_to_dt = timezone.now()
     else:
-        date_to_dt = timezone.make_aware(datetime.strptime(date_to, '%Y-%m-%d'))
+        try:
+            date_to_dt = timezone.make_aware(parse_date_flexibly(date_to))
+        except ValueError as e:
+            messages.error(request, f"Invalid to date format: {e}")
+            return redirect('admin_dashboard:reports_dashboard')
     
     report_generator = ReportGenerator(date_from_dt, date_to_dt)
     report_data = report_generator.get_security_report()
@@ -675,12 +740,20 @@ def activity_report(request):
     if not date_from:
         date_from_dt = timezone.now() - timedelta(days=30)
     else:
-        date_from_dt = timezone.make_aware(datetime.strptime(date_from, '%Y-%m-%d'))
+        try:
+            date_from_dt = timezone.make_aware(parse_date_flexibly(date_from))
+        except ValueError as e:
+            messages.error(request, f"Invalid from date format: {e}")
+            return redirect('admin_dashboard:reports_dashboard')
     
     if not date_to:
         date_to_dt = timezone.now()
     else:
-        date_to_dt = timezone.make_aware(datetime.strptime(date_to, '%Y-%m-%d'))
+        try:
+            date_to_dt = timezone.make_aware(parse_date_flexibly(date_to))
+        except ValueError as e:
+            messages.error(request, f"Invalid to date format: {e}")
+            return redirect('admin_dashboard:reports_dashboard')
     
     report_generator = ReportGenerator(date_from_dt, date_to_dt)
     report_data = report_generator.get_activity_report()
@@ -707,12 +780,20 @@ def library_operations_report(request):
     if not date_from:
         date_from_dt = timezone.now() - timedelta(days=30)
     else:
-        date_from_dt = timezone.make_aware(datetime.strptime(date_from, '%Y-%m-%d'))
+        try:
+            date_from_dt = timezone.make_aware(parse_date_flexibly(date_from))
+        except ValueError as e:
+            messages.error(request, f"Invalid from date format: {e}")
+            return redirect('admin_dashboard:reports_dashboard')
     
     if not date_to:
         date_to_dt = timezone.now()
     else:
-        date_to_dt = timezone.make_aware(datetime.strptime(date_to, '%Y-%m-%d'))
+        try:
+            date_to_dt = timezone.make_aware(parse_date_flexibly(date_to))
+        except ValueError as e:
+            messages.error(request, f"Invalid to date format: {e}")
+            return redirect('admin_dashboard:reports_dashboard')
     
     report_generator = ReportGenerator(date_from_dt, date_to_dt)
     report_data = report_generator.get_library_operations_report()
@@ -736,12 +817,22 @@ def export_report(request):
     if not date_from:
         date_from_dt = timezone.now() - timedelta(days=30)
     else:
-        date_from_dt = timezone.make_aware(datetime.strptime(date_from, '%Y-%m-%d'))
+        try:
+            parsed_date = parse_date_flexibly(date_from)
+            date_from_dt = timezone.make_aware(parsed_date)
+        except ValueError as e:
+            messages.error(request, f"Invalid from date format: {e}")
+            return redirect('admin_dashboard:reports_dashboard')
     
     if not date_to:
         date_to_dt = timezone.now()
     else:
-        date_to_dt = timezone.make_aware(datetime.strptime(date_to, '%Y-%m-%d'))
+        try:
+            parsed_date = parse_date_flexibly(date_to)
+            date_to_dt = timezone.make_aware(parsed_date)
+        except ValueError as e:
+            messages.error(request, f"Invalid to date format: {e}")
+            return redirect('admin_dashboard:reports_dashboard')
     
     report_generator = ReportGenerator(date_from_dt, date_to_dt)
     
@@ -754,6 +845,9 @@ def export_report(request):
     elif report_type == 'activity':
         report_data = {'activity_report': report_generator.get_activity_report()}
         filename = f'activity_report_{date_from_dt.strftime("%Y%m%d")}_{date_to_dt.strftime("%Y%m%d")}.csv'
+    elif report_type == 'library_operations':
+        report_data = {'library_operations': report_generator.get_library_operations_report()}
+        filename = f'library_operations_report_{date_from_dt.strftime("%Y%m%d")}_{date_to_dt.strftime("%Y%m%d")}.csv'
     else:
         report_data = report_generator.get_comprehensive_report()
         filename = f'comprehensive_report_{date_from_dt.strftime("%Y%m%d")}_{date_to_dt.strftime("%Y%m%d")}.csv'

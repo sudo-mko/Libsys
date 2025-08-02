@@ -149,7 +149,7 @@ AUTH_USER_MODEL = 'users.User'
 
 # Authentication backends
 AUTHENTICATION_BACKENDS = [
-    'admin_dashboard.auth_backends.AuditingAuthBackend',
+    'admin_dashboard.auth_backends.LibraryManagementAuditAuthBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 

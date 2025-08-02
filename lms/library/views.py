@@ -8,9 +8,14 @@ from borrow.models import Borrowing
 from reservations.models import Reservation
 from django.db.models import Q
 from django.http import JsonResponse
+from django.urls import reverse
 
 # Create your views here.
 def index(request):
+    # Redirect admin users to admin dashboard
+    if request.user.is_authenticated and request.user.role in ['admin', 'manager']:
+        return redirect(reverse('admin_dashboard:dashboard'))
+    
     books = Book.objects.all() # type: ignore
     context = {
         'books': books
