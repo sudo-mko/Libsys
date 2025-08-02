@@ -154,3 +154,5 @@ ACCOUNT_LOCK_SETTINGS = {
     'AFFECTED_USER_ROLES': ['member'],  # Configurable list for future flexibility
     'WARNING_THRESHOLD': 3,  # Start showing warnings after this many failed attempts
 }
+
+
