@@ -1,0 +1,279 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block admin_content %}
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-900">System Activity Report</h2>
+    <div class="flex space-x-2">
+        <a href="{% url 'admin_dashboard:reports_dashboard' %}" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Reports
+        </a>
+        <a href="{% url 'admin_dashboard:export_report' %}?type=activity{% if date_from %}&date_from={{ date_from|date:'Y-m-d' }}{% endif %}{% if date_to %}&date_to={{ date_to|date:'Y-m-d' }}{% endif %}" 
+           class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+            <i class="fas fa-download mr-2"></i>Export CSV
+        </a>
+    </div>
+</div>
+
+<!-- Date Range Info -->
+{% if date_from and date_to %}
+<div class="bg-blue-50 p-4 rounded-lg mb-6">
+    <h3 class="text-sm font-medium text-blue-800">Report Period</h3>
+    <p class="text-blue-700">{{ date_from }} to {{ date_to }}</p>
+</div>
+{% endif %}
+
+<!-- Activity Overview -->
+<div class="bg-white p-6 rounded-lg shadow mb-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h3 class="text-2xl font-bold text-gray-900">{{ report.total_activities }}</h3>
+            <p class="text-gray-600">Total System Activities</p>
+        </div>
+        <div class="flex-shrink-0">
+            <i class="fas fa-chart-line text-4xl text-green-500"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Daily Activity Chart -->
+<div class="bg-white p-6 rounded-lg shadow mb-6">
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Daily Activity Trends</h3>
+    <div class="h-64">
+        <canvas id="dailyActivityChart"></canvas>
+    </div>
+</div>
+
+<!-- Activity Breakdown -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Top Activities -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Top Activities</h3>
+        {% if report.activities_by_action %}
+        <div class="space-y-4">
+            {% for activity in report.activities_by_action %}
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full 
+                        {% if 'LOGIN' in activity.action %}bg-green-100 text-green-800
+                        {% elif 'BOOK' in activity.action %}bg-blue-100 text-blue-800
+                        {% elif 'FINE' in activity.action %}bg-yellow-100 text-yellow-800
+                        {% elif 'USER' in activity.action %}bg-purple-100 text-purple-800
+                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {{ activity.action|title }}
+                    </span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-24 bg-gray-200 rounded-full h-2 mr-3">
+                        <div class="bg-blue-600 h-2 rounded-full" 
+                             style="width: {% widthratio activity.count report.total_activities 100 %}%"></div>
+                    </div>
+                    <span class="text-lg font-bold text-gray-900">{{ activity.count }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-sm">No activities recorded in this period</p>
+        {% endif %}
+    </div>
+    
+    <!-- Most Active Users -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Most Active Users</h3>
+        {% if report.most_active_users %}
+        <div class="space-y-3">
+            {% for user in report.most_active_users %}
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <div>
+                    <span class="text-sm font-medium text-gray-900">{{ user.user__username }}</span>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                            {% if user.user__role == 'admin' %}bg-red-100 text-red-800
+                            {% elif user.user__role == 'manager' %}bg-yellow-100 text-yellow-800
+                            {% elif user.user__role == 'librarian' %}bg-green-100 text-green-800
+                            {% else %}bg-blue-100 text-blue-800{% endif %}">
+                            {{ user.user__role|title }}
+                        </span>
+                    </div>
+                </div>
+                <span class="text-lg font-bold text-gray-900">{{ user.activity_count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-sm">No user activity recorded in this period</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Activity Categories -->
+<div class="bg-white p-6 rounded-lg shadow mb-6">
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Activity Categories</h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Authentication Activities -->
+        <div class="p-4 border rounded-lg">
+            <div class="flex items-center mb-2">
+                <i class="fas fa-sign-in-alt text-green-500 mr-2"></i>
+                <h4 class="font-semibold text-gray-700">Authentication</h4>
+            </div>
+            <div class="space-y-1 text-sm">
+                {% for activity in report.activities_by_action %}
+                    {% if 'LOGIN' in activity.action or 'LOGOUT' in activity.action %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">{{ activity.action|title }}</span>
+                        <span class="font-medium">{{ activity.count }}</span>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Book Management -->
+        <div class="p-4 border rounded-lg">
+            <div class="flex items-center mb-2">
+                <i class="fas fa-book text-blue-500 mr-2"></i>
+                <h4 class="font-semibold text-gray-700">Book Management</h4>
+            </div>
+            <div class="space-y-1 text-sm">
+                {% for activity in report.activities_by_action %}
+                    {% if 'BOOK' in activity.action %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">{{ activity.action|title }}</span>
+                        <span class="font-medium">{{ activity.count }}</span>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- User Management -->
+        <div class="p-4 border rounded-lg">
+            <div class="flex items-center mb-2">
+                <i class="fas fa-users text-purple-500 mr-2"></i>
+                <h4 class="font-semibold text-gray-700">User Management</h4>
+            </div>
+            <div class="space-y-1 text-sm">
+                {% for activity in report.activities_by_action %}
+                    {% if 'USER' in activity.action %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">{{ activity.action|title }}</span>
+                        <span class="font-medium">{{ activity.count }}</span>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Financial Activities -->
+        <div class="p-4 border rounded-lg">
+            <div class="flex items-center mb-2">
+                <i class="fas fa-dollar-sign text-yellow-500 mr-2"></i>
+                <h4 class="font-semibold text-gray-700">Financial</h4>
+            </div>
+            <div class="space-y-1 text-sm">
+                {% for activity in report.activities_by_action %}
+                    {% if 'FINE' in activity.action %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">{{ activity.action|title }}</span>
+                        <span class="font-medium">{{ activity.count }}</span>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Activity Timeline -->
+{% if report.daily_activities %}
+<div class="bg-white p-6 rounded-lg shadow">
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Activity Timeline</h3>
+    <div class="space-y-3">
+        {% for day_activity in report.daily_activities %}
+        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+            <span class="text-sm font-medium text-gray-900">{{ day_activity.day }}</span>
+            <div class="flex items-center">
+                <div class="w-32 bg-gray-200 rounded-full h-2 mr-3">
+                    {% if report.daily_activities %}
+                        {% for max_day in report.daily_activities %}
+                            {% if forloop.first %}
+                                <div class="bg-green-600 h-2 rounded-full" 
+                                     style="width: {% widthratio day_activity.count max_day.count 100 %}%"></div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <span class="text-sm font-bold text-gray-900">{{ day_activity.count }} activities</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Charts Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Daily Activity Chart
+    const ctx = document.getElementById('dailyActivityChart').getContext('2d');
+    
+    const labels = {{ daily_chart.labels|safe }};
+    const data = {{ daily_chart.values|safe }};
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Daily Activities',
+                data: data,
+                backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                borderColor: 'rgb(34, 197, 94)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            }
+        }
+    });
+});
+</script>
+
+<!-- Activity Information -->
+<div class="mt-6 bg-green-50 p-4 rounded-lg">
+    <div class="flex">
+        <div class="flex-shrink-0">
+            <i class="fas fa-info-circle text-green-400"></i>
+        </div>
+        <div class="ml-3">
+            <h3 class="text-sm font-medium text-green-800">Activity Tracking Information</h3>
+            <div class="mt-2 text-sm text-green-700">
+                <ul class="list-disc pl-5 space-y-1">
+                    <li>All user actions are automatically tracked and logged</li>
+                    <li>Activity data helps identify system usage patterns</li>
+                    <li>Peak usage times can be identified for resource planning</li>
+                    <li>User behavior analysis helps improve system efficiency</li>
+                    <li>Activity trends support decision-making for system enhancements</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

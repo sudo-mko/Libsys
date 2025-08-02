@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'borrow',
     'reservations',
     'fines',
+    'admin_dashboard',
     'widget_tweaks',
     'django.contrib.humanize',
 ]
@@ -60,6 +61,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'admin_dashboard.middleware.SessionTimeoutMiddleware',
+    'admin_dashboard.middleware.PasswordPolicyMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_browser_reload.middleware.BrowserReloadMiddleware",
@@ -144,6 +147,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.User'
 
+# Authentication backends
+AUTHENTICATION_BACKENDS = [
+    'admin_dashboard.auth_backends.AuditingAuthBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 
 NPM_BIN_PATH = r"/usr/local/bin/npm"
 
@@ -151,6 +160,20 @@ NPM_BIN_PATH = r"/usr/local/bin/npm"
 ACCOUNT_LOCK_SETTINGS = {
     'MAX_FAILED_ATTEMPTS': 5,
     'LOCK_DURATION_MINUTES': 5,
-    'AFFECTED_USER_ROLES': ['member'],  # Configurable list for future flexibility
-    'WARNING_THRESHOLD': 3,  # Start showing warnings after this many failed attempts
+    'WARNING_THRESHOLD': 3,
+    'AFFECTED_USER_ROLES': ['member', 'librarian', 'manager', 'admin']
+}
+
+# Session Timeout Settings (in minutes)
+SESSION_TIMEOUT_BY_ROLE = {
+    'member': 15,        # 15 minutes for regular members
+    'librarian': 15,     # 15 minutes for librarians
+    'manager': 30,       # 30 minutes for managers (can be adjusted)
+    'admin': 30,         # 30 minutes for admins (can be adjusted)
+}
+
+# Password Policy Settings
+PASSWORD_POLICY = {
+    'ADMIN_MANAGER_EXPIRY_DAYS': 180,  # 6 months
+    'FORCE_CHANGE_ON_FIRST_LOGIN': True,
 }

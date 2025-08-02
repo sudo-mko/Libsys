@@ -1,0 +1,128 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block admin_content %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Users -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fas fa-users text-2xl text-blue-500"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-lg font-medium text-gray-900">Total Users</h3>
+                <p class="text-3xl font-bold text-blue-600">{{ total_users }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Active Accounts -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fas fa-user-check text-2xl text-green-500"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-lg font-medium text-gray-900">Active Accounts</h3>
+                <p class="text-3xl font-bold text-green-600">{{ active_accounts }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Locked Accounts -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fas fa-user-lock text-2xl text-red-500"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-lg font-medium text-gray-900">Locked Accounts</h3>
+                <p class="text-3xl font-bold text-red-600">{{ locked_accounts }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fas fa-activity text-2xl text-purple-500"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-lg font-medium text-gray-900">Recent Actions</h3>
+                <p class="text-3xl font-bold text-purple-600">{{ recent_audit_logs }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Role Distribution -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">User Distribution by Role</h3>
+        <div class="space-y-3">
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600">Members</span>
+                <span class="font-semibold text-blue-600">{{ total_members }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600">Librarians</span>
+                <span class="font-semibold text-green-600">{{ total_librarians }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600">Managers</span>
+                <span class="font-semibold text-yellow-600">{{ total_managers }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Recent Activity (30 Days)</h3>
+        <div class="space-y-3">
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600">New Users</span>
+                <span class="font-semibold text-blue-600">{{ recent_users }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600">Admin Actions</span>
+                <span class="font-semibold text-purple-600">{{ recent_audit_logs }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="bg-white p-6 rounded-lg shadow">
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        <a href="{% url 'admin_dashboard:manage_users' %}" class="block p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+            <i class="fas fa-users text-blue-500 text-xl mb-2"></i>
+            <h4 class="font-semibold text-gray-900">Manage Users</h4>
+            <p class="text-sm text-gray-600">View, edit, and manage user accounts</p>
+        </a>
+        
+        <a href="{% url 'admin_dashboard:system_settings' %}" class="block p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+            <i class="fas fa-cog text-green-500 text-xl mb-2"></i>
+            <h4 class="font-semibold text-gray-900">System Settings</h4>
+            <p class="text-sm text-gray-600">Configure system parameters</p>
+        </a>
+        
+        <a href="{% url 'admin_dashboard:session_management' %}" class="block p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors">
+            <i class="fas fa-clock text-orange-500 text-xl mb-2"></i>
+            <h4 class="font-semibold text-gray-900">Session Management</h4>
+            <p class="text-sm text-gray-600">Manage active sessions and timeouts</p>
+        </a>
+        
+        <a href="{% url 'admin_dashboard:audit_logs' %}" class="block p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+            <i class="fas fa-clipboard-list text-purple-500 text-xl mb-2"></i>
+            <h4 class="font-semibold text-gray-900">Audit Logs</h4>
+            <p class="text-sm text-gray-600">View system activity logs</p>
+        </a>
+        
+        <a href="{% url 'admin_dashboard:reports_dashboard' %}" class="block p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors">
+            <i class="fas fa-chart-bar text-indigo-500 text-xl mb-2"></i>
+            <h4 class="font-semibold text-gray-900">Reports</h4>
+            <p class="text-sm text-gray-600">Comprehensive system reports</p>
+        </a>
+    </div>
+</div>
+{% endblock %}
