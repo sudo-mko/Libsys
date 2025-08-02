@@ -292,4 +292,103 @@ def export_report_to_csv(report_data, report_type='comprehensive'):
         for event in data['security_by_type']:
             writer.writerow([event['action'], event['count']])
     
+    elif report_type == 'activity':
+        writer.writerow(['Activity Metric', 'Count'])
+        data = report_data['activity_report']
+        writer.writerow(['Total Activities', data['total_activities']])
+        writer.writerow(['Logins', data['login_count']])
+        writer.writerow(['Logouts', data['logout_count']])
+        writer.writerow(['Password Changes', data['password_changes']])
+        
+        writer.writerow([])
+        writer.writerow(['Date', 'Activity Count'])
+        for activity in data['daily_activities']:
+            writer.writerow([activity['day'], activity['count']])
+        
+        writer.writerow([])
+        writer.writerow(['Action Type', 'Count'])
+        for activity in data['activities_by_type']:
+            writer.writerow([activity['action'], activity['count']])
+    
+    elif report_type == 'library_operations':
+        writer.writerow(['Library Metric', 'Count'])
+        data = report_data['library_operations']
+        writer.writerow(['Total Books', data['total_books']])
+        writer.writerow(['Available Books', data['available_books']])
+        writer.writerow(['Borrowed Books', data['borrowed_books']])
+        writer.writerow(['Total Borrowings', data['total_borrowings']])
+        writer.writerow(['Active Borrowings', data['active_borrowings']])
+        writer.writerow(['Total Returns', data['total_returns']])
+        writer.writerow(['Total Reservations', data['total_reservations']])
+        writer.writerow(['Active Reservations', data['active_reservations']])
+        writer.writerow(['Total Fines', f"${data['total_fines']:.2f}"])
+        writer.writerow(['Paid Fines', f"${data['paid_fines']:.2f}"])
+        writer.writerow(['Unpaid Fines', f"${data['unpaid_fines']:.2f}"])
+        
+        writer.writerow([])
+        writer.writerow(['Popular Books'])
+        writer.writerow(['Title', 'Author', 'Borrow Count'])
+        for book in data['popular_books']:
+            writer.writerow([book['title'], book['author'], book['borrow_count']])
+    
+    elif report_type == 'comprehensive':
+        # Write comprehensive report with all sections
+        writer.writerow(['COMPREHENSIVE LIBRARY MANAGEMENT SYSTEM REPORT'])
+        writer.writerow(['=' * 50])
+        writer.writerow([])
+        
+        # Report period
+        period = report_data.get('report_period', {})
+        writer.writerow(['Report Period:', f"{period.get('from', 'N/A')} to {period.get('to', 'N/A')}"])
+        writer.writerow(['Days Covered:', period.get('days', 'N/A')])
+        writer.writerow([])
+        
+        # User Statistics Section
+        writer.writerow(['USER STATISTICS'])
+        writer.writerow(['-' * 30])
+        user_data = report_data.get('user_statistics', {})
+        writer.writerow(['Total Users', user_data.get('total_users', 0)])
+        writer.writerow(['Active Users', user_data.get('active_users', 0)])
+        writer.writerow(['Inactive Users', user_data.get('inactive_users', 0)])
+        writer.writerow(['Locked Accounts', user_data.get('locked_accounts', 0)])
+        writer.writerow([])
+        
+        # Activity Section
+        writer.writerow(['SYSTEM ACTIVITY'])
+        writer.writerow(['-' * 30])
+        activity_data = report_data.get('activity_report', {})
+        writer.writerow(['Total Activities', activity_data.get('total_activities', 0)])
+        writer.writerow(['Logins', activity_data.get('login_count', 0)])
+        writer.writerow(['Logouts', activity_data.get('logout_count', 0)])
+        writer.writerow(['Password Changes', activity_data.get('password_changes', 0)])
+        writer.writerow([])
+        
+        # Security Section
+        writer.writerow(['SECURITY REPORT'])
+        writer.writerow(['-' * 30])
+        security_data = report_data.get('security_report', {})
+        writer.writerow(['Total Security Events', security_data.get('total_security_events', 0)])
+        writer.writerow(['Failed Logins', security_data.get('failed_logins', 0)])
+        writer.writerow(['Account Lockouts', security_data.get('account_lockouts', 0)])
+        writer.writerow([])
+        
+        # Library Operations Section
+        writer.writerow(['LIBRARY OPERATIONS'])
+        writer.writerow(['-' * 30])
+        lib_data = report_data.get('library_operations', {})
+        writer.writerow(['Total Books', lib_data.get('total_books', 0)])
+        writer.writerow(['Available Books', lib_data.get('available_books', 0)])
+        writer.writerow(['Borrowed Books', lib_data.get('borrowed_books', 0)])
+        writer.writerow(['Total Borrowings', lib_data.get('total_borrowings', 0)])
+        writer.writerow(['Active Borrowings', lib_data.get('active_borrowings', 0)])
+        writer.writerow(['Total Reservations', lib_data.get('total_reservations', 0)])
+        writer.writerow(['Active Reservations', lib_data.get('active_reservations', 0)])
+        writer.writerow(['Total Fines', f"${lib_data.get('total_fines', 0):.2f}"])
+        writer.writerow(['Paid Fines', f"${lib_data.get('paid_fines', 0):.2f}"])
+        writer.writerow(['Unpaid Fines', f"${lib_data.get('unpaid_fines', 0):.2f}"])
+    
+    else:
+        # Fallback for unknown report types
+        writer.writerow(['Error', f'Unknown report type: {report_type}'])
+    
     return output.getvalue()

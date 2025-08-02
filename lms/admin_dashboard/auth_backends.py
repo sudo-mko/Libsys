@@ -6,10 +6,38 @@ from .models import AuditLog
 
 User = get_user_model()
 
-class AuditingAuthBackend(ModelBackend):
+class LibraryManagementAuditAuthBackend(ModelBackend):
     """
-    Custom authentication backend that logs all login attempts
+    Library Management System - Custom Authentication Backend
+    
+    This backend provides:
+    - Comprehensive audit logging for all authentication attempts
+    - Failed login tracking and account lockout protection
+    - Security monitoring and suspicious activity detection
+    - Automatic account unlock after timeout periods
+    
+    Unique identifier: libsys_lms_audit_auth_v1.0
     """
+    
+    # Unique backend identifier to prevent conflicts
+    BACKEND_ID = "libsys_lms_audit_auth_v1.0"
+    BACKEND_NAME = "Library Management System Audit Authentication Backend"
+    
+    def get_backend_info(self):
+        """Return backend identification information"""
+        return {
+            'id': self.BACKEND_ID,
+            'name': self.BACKEND_NAME,
+            'version': '1.0',
+            'description': 'Library Management System Authentication with Audit Logging',
+            'features': [
+                'audit_logging',
+                'failed_attempt_tracking', 
+                'account_lockout',
+                'suspicious_activity_detection',
+                'automatic_unlock'
+            ]
+        }
     
     def authenticate(self, request, username=None, password=None, **kwargs):
         if username is None:
@@ -37,13 +65,13 @@ class AuditingAuthBackend(ModelBackend):
             return None
     
     def _log_successful_login(self, request, user):
-        """Log successful login"""
+        """Log successful login with backend identification"""
         ip_address = self._get_client_ip(request)
         try:
             AuditLog.objects.create(
                 user=user,
                 action='LOGIN_SUCCESS',
-                details=f"Successful login from IP: {ip_address}",
+                details=f"Successful login from IP: {ip_address} [Auth: {self.BACKEND_ID}]",
                 ip_address=ip_address
             )
         except Exception:
@@ -63,7 +91,7 @@ class AuditingAuthBackend(ModelBackend):
             AuditLog.objects.create(
                 user=user,
                 action='LOGIN_FAILED',
-                details=f"Failed login attempt for username '{username}': {reason}. IP: {ip_address}",
+                details=f"Failed login attempt for username '{username}': {reason}. IP: {ip_address} [Auth: {self.BACKEND_ID}]",
                 ip_address=ip_address
             )
         except Exception:
@@ -151,3 +179,43 @@ class AuditingAuthBackend(ModelBackend):
                     pass
         
         return super().user_can_authenticate(user)
+    
+    @classmethod
+    def validate_uniqueness(cls):
+        """
+        Validate that this backend is uniquely configured
+        Returns: dict with validation results
+        """
+        from django.conf import settings
+        
+        results = {
+            'is_unique': True,
+            'conflicts': [],
+            'warnings': [],
+            'backend_info': {
+                'id': cls.BACKEND_ID,
+                'name': cls.BACKEND_NAME,
+                'path': f'{cls.__module__}.{cls.__name__}'
+            }
+        }
+        
+        # Check for duplicate backend entries
+        auth_backends = getattr(settings, 'AUTHENTICATION_BACKENDS', [])
+        backend_path = f'{cls.__module__}.{cls.__name__}'
+        
+        # Count occurrences of this backend
+        backend_count = auth_backends.count(backend_path)
+        if backend_count > 1:
+            results['is_unique'] = False
+            results['conflicts'].append(f"Backend '{backend_path}' appears {backend_count} times in AUTHENTICATION_BACKENDS")
+        
+        # Check for similar named backends
+        for backend in auth_backends:
+            if backend != backend_path and ('audit' in backend.lower() or 'logging' in backend.lower()):
+                results['warnings'].append(f"Similar backend detected: {backend}")
+        
+        # Verify backend is properly positioned (should be first for audit logging)
+        if auth_backends and auth_backends[0] != backend_path:
+            results['warnings'].append(f"Backend should be first in AUTHENTICATION_BACKENDS for proper audit logging")
+        
+        return results
