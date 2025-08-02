@@ -66,15 +66,7 @@
         ></i>
         <span class="sidebar-text-item">Borrowing History</span>
       </a>
-      <a
-        href="/fines/"
-        class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/fines/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group"
-      >
-        <i
-          class="fas fa-credit-card text-base mr-2 {% if request.path == '/fines/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"
-        ></i>
-        <span class="sidebar-text-item">Pay Fines</span>
-      </a>
+
       <a
         href="{% url 'users:membership' %}"
         class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/users/membership/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group"
@@ -99,7 +91,7 @@
         <i
           class="fas fa-cog text-base mr-2 {% if request.path == '/profile/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"
         ></i>
-        <span class="sidebar-text-item">Settings</span>
+        <span class="sidebar-text-item">Profile</span>
       </a>
       {% elif user.role == 'librarian' %}
       <div class="px-3 py-2">
@@ -409,15 +401,7 @@
         ></i>
         <span class="sidebar-text-item">Home</span>
       </a>
-      <a
-        href="/search/"
-        class="flex items-center px-3 py-2 text-sm font-medium rounded-md {% if request.path == '/search/' %}text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50{% else %}text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-black{% endif %} group"
-      >
-        <i
-          class="fas fa-search text-base mr-2 {% if request.path == '/search/' %}text-indigo-600 dark:text-indigo-400{% else %}text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400{% endif %}"
-        ></i>
-        <span class="sidebar-text-item">Browse Books</span>
-      </a>
+
       {% endif %}
     </div>
 
