@@ -593,33 +593,122 @@ def delete_membership_type(request, membership_id):
     
     return redirect('users:manage_memberships')
 
-# @login_required
-# def unlock_accounts(request):
-#     if request.user.role != 'manager':
-#         from django.http import HttpResponseForbidden
-#         return HttpResponseForbidden("You don't have permission to unlock accounts.")
+
+@login_required
+def unlock_accounts(request):
+    """View for managing locked accounts (Manager + Admin access)"""
+    if request.user.role not in ['manager', 'admin']:
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden("You don't have permission to manage locked accounts.")
     
-#     from users.models import User
-#     from django.contrib import messages
+    from users.models import User
+    from django.db.models import Q
     
-#     # Get locked accounts
-#     locked_users = User.objects.filter(account_locked_until__isnull=False)
+    # Handle GET parameters for lock user form
+    lock_user_id = request.GET.get('lock')
+    lock_user = None
+    if lock_user_id and lock_user_id.isdigit() and request.user.role == 'admin':
+        try:
+            lock_user = User.objects.get(
+                id=lock_user_id,
+                account_locked_until__isnull=True,
+                role__in=['member', 'librarian']
+            )
+        except User.DoesNotExist:
+            messages.error(request, "User not found or not eligible for locking")
+
+    # Handle POST requests for unlock/lock actions
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        user_id = request.POST.get('user_id')
+        reason = request.POST.get('reason', '')
+        
+        if user_id:
+            try:
+                user = User.objects.get(id=user_id)
+                
+                if action == 'unlock':
+                    user.reset_lock_status(performed_by=request.user, reason=reason)
+                    messages.success(request, f'Account for {user.get_full_name() or user.username} has been unlocked.')
+                    return redirect('users:unlock_accounts')
+                
+                elif action == 'lock' and request.user.role == 'admin':
+                    duration_minutes = request.POST.get('duration_minutes')
+                    try:
+                        duration = int(duration_minutes) if duration_minutes else None
+                    except ValueError:
+                        duration = None
+                    
+                    user.lock_account_manually(
+                        performed_by=request.user,
+                        reason=reason,
+                        duration_minutes=duration
+                    )
+                    messages.success(request, f'Account for {user.get_full_name() or user.username} has been locked.')
+                    return redirect('users:unlock_accounts')
+                
+                else:
+                    messages.error(request, 'Invalid action or insufficient permissions.')
+                    
+            except User.DoesNotExist:
+                messages.error(request, 'User not found.')
+            except Exception as e:
+                messages.error(request, f'Error performing action: {str(e)}')
     
-#     if request.method == 'POST':
-#         user_id = request.POST.get('user_id')
-#         if user_id:
-#             try:
-#                 user = User.objects.get(id=user_id)
-#                 user.reset_lock_status()
-#                 messages.success(request, f'Account for {user.username} has been unlocked.')
-#             except User.DoesNotExist:
-#                 messages.error(request, 'User not found.')
+    # Get search parameter
+    search_query = request.GET.get('search', '').strip()
     
-#     context = {
-#         'locked_users': locked_users,
-#     }
+    # Get locked accounts with user details
+    locked_users = User.objects.filter(account_locked_until__isnull=False).select_related('membership')
     
-#     return render(request, 'manager/unlock_accounts.html', context)
+    # Apply search filter
+    if search_query:
+        locked_users = locked_users.filter(
+            Q(username__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(email__icontains=search_query)
+        )
+    
+    # Get all users for admin lock functionality (excluding locked ones)
+    all_users = User.objects.filter(
+        account_locked_until__isnull=True,
+        role__in=['member', 'librarian']
+    ).select_related('membership') if request.user.role == 'admin' else None
+    
+    # Apply search to all users too
+    if all_users and search_query:
+        all_users = all_users.filter(
+            Q(username__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(email__icontains=search_query)
+        )
+    
+
+    
+    # Statistics
+    total_locked = User.objects.filter(account_locked_until__isnull=False).count()
+    locked_today = User.objects.filter(
+        account_locked_until__isnull=False,
+        last_failed_attempt__date=timezone.now().date()
+    ).count()
+    unlocked_today = 0  # Removed audit log feature
+    
+    context = {
+        'locked_users': locked_users,
+        'all_users': all_users,
+        'search_query': search_query,
+        'is_admin': request.user.role == 'admin',
+        'now': timezone.now(),
+        'lock_user': lock_user,
+        # Statistics
+        'total_locked': total_locked,
+        'locked_today': locked_today,
+        'unlocked_today': unlocked_today,
+    }
+    
+    return render(request, 'manager/unlock_accounts.html', context)
 
 @login_required
 def user_list(request):
