@@ -30,6 +30,7 @@ urlpatterns = [
     path('borrow/', include('borrow.urls')),
     path('branches/', include('branches.urls')),
     path('profile/', profile_view, name='profile-direct'),
+    path('privacy/', include('privacy.urls')),
 ]
 
 if settings.DEBUG:
