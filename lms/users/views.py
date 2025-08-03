@@ -274,7 +274,7 @@ def manage_users(request):
 
 @login_required
 def create_user(request):
-    if request.user.role != 'manager':
+    if request.user.role not in ['manager', 'admin']:
         from django.http import HttpResponseForbidden
         return HttpResponseForbidden("You don't have permission to create users.")
     
@@ -411,7 +411,7 @@ def manage_memberships(request):
 
 @login_required
 def user_list(request):
-    if request.user.role != 'manager':
+    if request.user.role not in ['manager', 'admin']:
         from django.http import HttpResponseForbidden
         return HttpResponseForbidden("You don't have permission to view user list.")
     
