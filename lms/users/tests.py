@@ -20,7 +20,8 @@ class UserModelTest(TestCase):
             monthly_fee=Decimal('10.00'),
             annual_fee=Decimal('100.00'),
             max_books=3,
-            loan_period_days=14
+            loan_period_days=14,
+            extension_days=7
         )
         
     def test_user_creation_valid_data(self):
@@ -202,7 +203,8 @@ class MembershipTypeModelTest(TestCase):
                 monthly_fee=Decimal('-10.00'),  # Negative fee
                 annual_fee=Decimal('100.00'),
                 max_books=5,
-                loan_period_days=14
+                loan_period_days=14,
+            extension_days=7
             )
             membership.full_clean()
             
@@ -214,7 +216,8 @@ class MembershipTypeModelTest(TestCase):
                 monthly_fee=Decimal('10.00'),
                 annual_fee=Decimal('100.00'),
                 max_books=0,  # Zero books not allowed
-                loan_period_days=14
+                loan_period_days=14,
+            extension_days=7
             )
             membership.full_clean()
             
