@@ -38,6 +38,12 @@ class User(AbstractUser):
     last_password_change = models.DateTimeField(null=True, blank=True)
     password_change_required = models.BooleanField(default=False)
     
+    # GDPR Consent fields
+    privacy_consent = models.BooleanField(default=False, help_text="Consent to process personal data")
+    marketing_consent = models.BooleanField(default=False, help_text="Consent to receive marketing communications")
+    consent_date = models.DateTimeField(null=True, blank=True, help_text="Date when consent was given")
+    consent_ip = models.GenericIPAddressField(null=True, blank=True, help_text="IP address when consent was given")
+    
     # Add related_name attributes to avoid clash
     groups = models.ManyToManyField(
         'auth.Group',

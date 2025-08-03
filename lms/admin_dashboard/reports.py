@@ -135,6 +135,12 @@ class ReportGenerator:
             action='ACCOUNT_LOCKED'
         ).count()
         
+        # Calculate success rate
+        success_rate = 100
+        if total_security_events > 0:
+            failure_rate = (failed_logins / total_security_events) * 100
+            success_rate = max(0, 100 - failure_rate)
+        
         # Top security threat IPs
         threat_ips = AuditLog.objects.filter(
             timestamp__gte=self.date_from,
@@ -150,6 +156,7 @@ class ReportGenerator:
             'security_by_type': security_by_type,
             'failed_logins': failed_logins,
             'account_lockouts': account_lockouts,
+            'success_rate': round(success_rate, 1),
             'threat_ips': threat_ips,
         }
     

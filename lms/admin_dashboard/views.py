@@ -102,9 +102,9 @@ def audit_view_access(view_name):
     return decorator
 
 def admin_required(view_func):
-    """Decorator to ensure only admin users can access admin views"""
+    """Decorator to ensure only admin and manager users can access admin views"""
     def wrapper(request, *args, **kwargs):
-        if not request.user.is_authenticated or request.user.role != 'admin':
+        if not request.user.is_authenticated or request.user.role not in ['admin', 'manager']:
             return HttpResponseForbidden("You don't have permission to access admin features.")
         return view_func(request, *args, **kwargs)
     return wrapper

@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 py-8">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-lg shadow-lg p-8 border border-gray-200">
+                <h1 class="text-3xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-shield-alt text-indigo-500 text-3xl"></i>
+                    Privacy Policy
+                </h1>
+                
+                <div class="prose prose-lg max-w-none">
+                    <p class="text-gray-600 mb-6">
+                        <strong>Last updated:</strong> {{ "now"|date:"F j, Y" }}
+                    </p>
+                    
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">1. Information We Collect</h2>
+                    <p class="text-gray-700 mb-4">
+                        We collect the following personal information when you use our library management system:
+                    </p>
+                    <ul class="list-disc list-inside text-gray-700 mb-6 space-y-2">
+                        <li>Name and contact information (email, phone number)</li>
+                        <li>Library membership details and preferences</li>
+                        <li>Borrowing history and book preferences</li>
+                        <li>Account activity and login information</li>
+                        <li>IP address and technical data for security purposes</li>
+                    </ul>
+                    
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">2. How We Use Your Information</h2>
+                    <p class="text-gray-700 mb-4">
+                        We use your personal information to:
+                    </p>
+                    <ul class="list-disc list-inside text-gray-700 mb-6 space-y-2">
+                        <li>Provide library services and manage your account</li>
+                        <li>Process book borrowings and reservations</li>
+                        <li>Send important notifications about your account</li>
+                        <li>Improve our services and user experience</li>
+                        <li>Ensure security and prevent fraud</li>
+                    </ul>
+                    
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">3. Your Rights</h2>
+                    <p class="text-gray-700 mb-4">
+                        Under GDPR, you have the following rights:
+                    </p>
+                    <ul class="list-disc list-inside text-gray-700 mb-6 space-y-2">
+                        <li><strong>Right to Access:</strong> Request a copy of your personal data</li>
+                        <li><strong>Right to Rectification:</strong> Correct inaccurate personal data</li>
+                        <li><strong>Right to Erasure:</strong> Request deletion of your personal data</li>
+                        <li><strong>Right to Portability:</strong> Export your data in a machine-readable format</li>
+                        <li><strong>Right to Withdraw Consent:</strong> Withdraw consent at any time</li>
+                    </ul>
+                    
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">4. Data Retention</h2>
+                    <p class="text-gray-700 mb-6">
+                        We retain your personal data for as long as necessary to provide our services. 
+                        Account data is kept for 2 years after account deactivation. Audit logs are retained 
+                        for 1 year for security purposes.
+                    </p>
+                    
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">5. Contact Us</h2>
+                    <p class="text-gray-700 mb-6">
+                        If you have any questions about this privacy policy or wish to exercise your rights, 
+                        please contact us at privacy@library.com
+                    </p>
+                    
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        <a href="{% url 'privacy:cookie_policy' %}" 
+                           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <i class="fas fa-cookie-bite mr-2"></i>
+                            Cookie Policy
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'admin_dashboard',
     'widget_tweaks',
     'django.contrib.humanize',
+    'privacy',
 ]
 
 TAILWIND_APP_NAME = 'theme'
@@ -154,7 +155,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 
-NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
+NPM_BIN_PATH = "/usr/local/bin/npm"
 
 # Account Lock Settings
 ACCOUNT_LOCK_SETTINGS = {
