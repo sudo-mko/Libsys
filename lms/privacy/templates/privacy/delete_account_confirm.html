@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 py-8">
+    <div class="container mx-auto px-4">
+        <div class="max-w-2xl mx-auto">
+            <div class="bg-white rounded-lg shadow-lg p-8 border border-gray-200">
+                <div class="text-center mb-6">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                    </div>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">Delete Account</h1>
+                    <p class="text-gray-600">This action cannot be undone</p>
+                </div>
+                
+                <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+                    <h2 class="text-lg font-semibold text-red-800 mb-3">
+                        <i class="fas fa-warning mr-2"></i>
+                        Warning
+                    </h2>
+                    <p class="text-red-700 mb-4">
+                        Deleting your account will:
+                    </p>
+                    <ul class="list-disc list-inside text-red-700 space-y-2">
+                        <li>Permanently remove your personal information</li>
+                        <li>Delete your borrowing history and reservations</li>
+                        <li>Cancel any active memberships</li>
+                        <li>Remove access to all library services</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+                    <h2 class="text-lg font-semibold text-blue-800 mb-3">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        What Happens to Your Data
+                    </h2>
+                    <p class="text-blue-700 mb-3">
+                        In accordance with GDPR requirements:
+                    </p>
+                    <ul class="list-disc list-inside text-blue-700 space-y-2">
+                        <li>Your personal data will be anonymized</li>
+                        <li>Borrowing records will be kept for legal compliance</li>
+                        <li>Audit logs will be retained for security purposes</li>
+                        <li>You can request a copy of your data before deletion</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-3">
+                        <i class="fas fa-download mr-2"></i>
+                        Export Your Data First
+                    </h2>
+                    <p class="text-gray-700 mb-4">
+                        Before deleting your account, you may want to export your personal data:
+                    </p>
+                    <a href="{% url 'privacy:export_data' %}" 
+                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <i class="fas fa-download mr-2"></i>
+                        Export My Data
+                    </a>
+                </div>
+                
+                <form method="post" class="space-y-4">
+                    {% csrf_token %}
+                    
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="confirm_deletion" required 
+                                   class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                            <span class="ml-2 text-yellow-800">
+                                I understand that this action is permanent and cannot be undone
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <div class="flex space-x-4">
+                        <button type="submit" 
+                                class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                            <i class="fas fa-trash mr-2"></i>
+                            Delete My Account
+                        </button>
+                        <a href="{% url 'users:profile' %}" 
+                           class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-3 px-4 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+                
+                <div class="mt-6 pt-6 border-t border-gray-200 text-center">
+                    <p class="text-sm text-gray-600">
+                        Need help? <a href="mailto:support@library.com" class="text-indigo-600 hover:text-indigo-500">Contact Support</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

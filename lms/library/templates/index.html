@@ -14,6 +14,41 @@
 
        
      <!-- end page hero -->
+  <!-- GDPR Notice Section -->
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+    <div class="flex items-start">
+      <div class="flex-shrink-0">
+        <i class="fas fa-shield-alt text-blue-600 text-2xl"></i>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-lg font-semibold text-blue-800 mb-2">Your Privacy Matters</h3>
+        <p class="text-blue-700 mb-4">
+          We respect your privacy and are committed to protecting your personal data. 
+          Our library management system is GDPR compliant and provides you with full control over your data.
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <a href="{% url 'privacy:privacy_policy' %}" 
+             class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors">
+            <i class="fas fa-file-alt mr-2"></i>
+            Privacy Policy
+          </a>
+          <a href="{% url 'privacy:cookie_policy' %}" 
+             class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors">
+            <i class="fas fa-cookie-bite mr-2"></i>
+            Cookie Policy
+          </a>
+          {% if user.is_authenticated %}
+          <a href="{% url 'privacy:export_data' %}" 
+             class="inline-flex items-center px-3 py-2 text-sm font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-md transition-colors">
+            <i class="fas fa-download mr-2"></i>
+            Export My Data
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
   <h1 class="text-3xl font-bold mb-6 text-gray-800">Library Collection</h1>
 
   <div

@@ -20,6 +20,21 @@
   </head>
 
   <body class="bg-gray-100 font-sans leading-normal tracking-normal">
+    {% csrf_token %}
+    <!-- GDPR Notice Banner (Production Ready) - Only show for non-authenticated users -->
+    {% if not user.is_authenticated %}
+    <div class="bg-blue-50 border-b border-blue-200 py-2 px-4 text-center text-sm">
+      <div class="container mx-auto flex items-center justify-center space-x-4">
+        <i class="fas fa-shield-alt text-blue-600"></i>
+        <span class="text-blue-800">This site is GDPR compliant. Your privacy matters to us.</span>
+        <div class="flex space-x-2">
+          <a href="{% url 'privacy:privacy_policy' %}" class="text-blue-600 hover:text-blue-800 underline">Privacy Policy</a>
+          <a href="{% url 'privacy:cookie_policy' %}" class="text-blue-600 hover:text-blue-800 underline">Cookie Policy</a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    
     <div class="flex h-screen overflow-hidden">
       {% block sidebar %} {% include 'components/sidebar.html' %} {% endblock sidebar %}
 
@@ -202,6 +217,8 @@
         </main>
       </div>
     </div>
+    
+
 
     <!-- JavaScript for functionality -->
     <script>
@@ -359,6 +376,155 @@
           });
         }
       });
+      
+      // Cookie Consent Banner - Production Ready
+      function showCookieBanner() {
+        try {
+          const banner = document.getElementById('cookie-banner');
+          const hasConsent = localStorage.getItem('cookieConsent');
+          
+          if (banner && !hasConsent) {
+            banner.classList.remove('hidden');
+            console.log('Cookie banner shown');
+            
+            // Add smooth animation
+            banner.style.opacity = '0';
+            banner.style.transform = 'translateY(100%)';
+            setTimeout(() => {
+              banner.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+              banner.style.opacity = '1';
+              banner.style.transform = 'translateY(0)';
+            }, 10);
+          }
+        } catch (error) {
+          console.error('Error showing cookie banner:', error);
+        }
+      }
+      
+      function getCSRFToken() {
+        const token = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+        if (!token) {
+          console.warn('CSRF token not found');
+          return '';
+        }
+        return token;
+      }
+      
+      function acceptCookies() {
+        try {
+          localStorage.setItem('cookieConsent', 'accepted');
+          localStorage.setItem('cookieConsentDate', new Date().toISOString());
+          hideCookieBanner();
+          console.log('Cookies accepted');
+          
+          // Update user consent in database if authenticated
+          if (typeof fetch !== 'undefined') {
+            fetch('{% url "privacy:update_consent" %}', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCSRFToken()
+              },
+              body: 'privacy_consent=on&marketing_consent=on'
+            }).catch(error => console.log('Could not update server consent:', error));
+          }
+        } catch (error) {
+          console.error('Error accepting cookies:', error);
+          hideCookieBanner();
+        }
+      }
+      
+      function rejectCookies() {
+        try {
+          localStorage.setItem('cookieConsent', 'rejected');
+          localStorage.setItem('cookieConsentDate', new Date().toISOString());
+          hideCookieBanner();
+          console.log('Cookies rejected');
+        } catch (error) {
+          console.error('Error rejecting cookies:', error);
+          hideCookieBanner();
+        }
+      }
+      
+      function hideCookieBanner() {
+        try {
+          const banner = document.getElementById('cookie-banner');
+          if (banner) {
+            banner.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            banner.style.opacity = '0';
+            banner.style.transform = 'translateY(100%)';
+            setTimeout(() => {
+              banner.classList.add('hidden');
+            }, 300);
+          }
+        } catch (error) {
+          console.error('Error hiding cookie banner:', error);
+        }
+      }
+      
+      // Force show cookie banner for testing (remove in production)
+      function forceShowCookieBanner() {
+        localStorage.removeItem('cookieConsent');
+        localStorage.removeItem('cookieConsentDate');
+        showCookieBanner();
+      }
+      
+      // Initialize cookie banner with proper event handling
+      let bannerInitialized = false;
+      
+      function initializeCookieBanner() {
+        if (!bannerInitialized) {
+          bannerInitialized = true;
+          setTimeout(showCookieBanner, 500);
+        }
+      }
+      
+      // Single event listener
+      document.addEventListener('DOMContentLoaded', initializeCookieBanner);
+      
+      // Also try immediately if DOM is already loaded
+      if (document.readyState !== 'loading') {
+        initializeCookieBanner();
+      }
     </script>
+    
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 bg-gray-900 text-white p-4 z-50 hidden shadow-lg border-t border-gray-700">
+      <div class="container mx-auto max-w-7xl">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
+          <div class="flex-1">
+            <div class="flex items-start">
+              <i class="fas fa-cookie-bite text-yellow-400 mt-0.5 mr-3 flex-shrink-0"></i>
+              <div>
+                <p class="text-sm leading-relaxed">
+                  We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. 
+                  By continuing to use this site, you consent to our use of cookies.
+                </p>
+                <div class="mt-2 flex flex-wrap gap-2 text-xs">
+                  <a href="{% url 'privacy:cookie_policy' %}" class="text-blue-300 hover:text-blue-200 underline">
+                    Cookie Policy
+                  </a>
+                  <a href="{% url 'privacy:privacy_policy' %}" class="text-blue-300 hover:text-blue-200 underline">
+                    Privacy Policy
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <button onclick="rejectCookies()" 
+                    class="px-4 py-2 text-sm font-medium bg-gray-700 hover:bg-gray-600 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+                    aria-label="Reject cookies">
+              Reject All
+            </button>
+            <button onclick="acceptCookies()" 
+                    class="px-4 py-2 text-sm font-medium bg-green-600 hover:bg-green-500 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+                    aria-label="Accept cookies">
+              Accept All
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
