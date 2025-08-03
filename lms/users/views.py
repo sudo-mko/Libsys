@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
 from django.utils import timezone
+from decimal import Decimal, InvalidOperation
 from .forms import UserRegistrationForm, UserLoginForm
 from .models import User, MembershipType
 
@@ -144,40 +145,39 @@ def membership_view(request):
         
         if not selected_plan:
             messages.error(request, "Please select a membership plan.")
-            return render(request, 'membership.html')
+            # Get membership types for template context
+            membership_types = MembershipType.objects.all().order_by('monthly_fee')
+            return render(request, 'membership.html', {'membership_types': membership_types})
         
-        # Map frontend plan names to database membership names
-        plan_mapping = {
-            'student': 'Student Member',
-            'basic': 'Basic Member',
-            'premium': 'Premium Member'
-        }
-        
-        if selected_plan in plan_mapping:
-            membership_name = plan_mapping[selected_plan]
+        try:
+            # Get membership type directly by ID
+            membership_type = MembershipType.objects.get(id=selected_plan)
             
-            try:
-                # Fetch the existing membership type from database
-                membership_type = MembershipType.objects.get(name=membership_name)
-                
-                # Assign membership to user
-                old_membership = request.user.membership
-                request.user.membership = membership_type
-                request.user.save()
-                
-                if old_membership:
-                    messages.success(request, f"Your membership has been updated from {old_membership.name} to {membership_type.name}!")
-                else:
-                    messages.success(request, f"Welcome to {membership_type.name} membership! Your account has been upgraded.")
-                
-                return redirect('users:membership')
-                
-            except MembershipType.DoesNotExist:
-                messages.error(request, f"Membership type '{membership_name}' not found. Please contact support.")
-        else:
-            messages.error(request, "Invalid membership plan selected.")
+            # Assign membership to user
+            old_membership = request.user.membership
+            request.user.membership = membership_type
+            request.user.save()
+            
+            if old_membership:
+                messages.success(request, f"Your membership has been updated from {old_membership.name} to {membership_type.name}!")
+            else:
+                messages.success(request, f"Welcome to {membership_type.name} membership! Your account has been upgraded.")
+            
+            return redirect('users:membership')
+            
+        except MembershipType.DoesNotExist:
+            messages.error(request, "Selected membership type not found. Please contact support.")
+        except Exception as e:
+            messages.error(request, f"Error updating membership: {str(e)}")
     
-    return render(request, 'membership.html')
+    # Get all membership types from database for display
+    membership_types = MembershipType.objects.all().order_by('monthly_fee')
+    
+    context = {
+        'membership_types': membership_types,
+    }
+    
+    return render(request, 'membership.html', context)
 
 
 @login_required
@@ -364,50 +364,351 @@ def create_user(request):
 
 @login_required
 def manage_memberships(request):
-    if request.user.role != 'manager':
+    """Main membership management dashboard with comprehensive functionality"""
+    if request.user.role not in ['manager', 'admin']:
         from django.http import HttpResponseForbidden
         return HttpResponseForbidden("You don't have permission to manage memberships.")
     
-    from users.models import User, MembershipType
+    from django.db.models import Q, Count
+    from django.urls import reverse
+    from .forms import MembershipTypeForm
+    import re
     
-    # Get all users with their membership info
-    users = User.objects.select_related('membership').all()
-    membership_types = MembershipType.objects.all()
+    # Get search and filter parameters
+    search_query = request.GET.get('search', '').strip()
+    membership_filter = request.GET.get('membership', '')
+    
+    # Handle tab and edit state
+    active_tab = request.GET.get('tab', 'users')
+    edit_id = request.GET.get('edit', '')
+    edit_membership = None
+    
+    if edit_id and edit_id.isdigit():
+        try:
+            edit_membership = MembershipType.objects.get(id=edit_id)
+            active_tab = 'types'  # Switch to types tab when editing
+        except MembershipType.DoesNotExist:
+            messages.error(request, "Membership type not found")
+    
+    # Handle form submissions
+    create_form = MembershipTypeForm()
+    edit_form = None
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'create':
+            create_form = MembershipTypeForm(request.POST)
+            if create_form.is_valid():
+                create_form.save()
+                messages.success(request, f"Membership type '{create_form.cleaned_data['name']}' created successfully!")
+                return redirect(f"{reverse('users:manage_memberships')}?tab=types")
+            else:
+                active_tab = 'types'
+                
+        elif action == 'edit' and edit_membership:
+            edit_form = MembershipTypeForm(request.POST, instance=edit_membership)
+            if edit_form.is_valid():
+                edit_form.save()
+                messages.success(request, f"Membership type '{edit_form.cleaned_data['name']}' updated successfully!")
+                return redirect(f"{reverse('users:manage_memberships')}?tab=types")
+            else:
+                active_tab = 'types'
+    
+    # Create edit form if editing
+    if edit_membership:
+        edit_form = MembershipTypeForm(instance=edit_membership)
+    
+    # Base queryset - only members and librarians
+    users_queryset = User.objects.filter(role__in=['member', 'librarian']).select_related('membership')
+    
+    # Apply search filter
+    if search_query:
+        users_queryset = users_queryset.filter(
+            Q(username__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(email__icontains=search_query)
+        )
+    
+    # Apply membership filter
+    if membership_filter == 'no_membership':
+        users_queryset = users_queryset.filter(membership__isnull=True)
+    elif membership_filter and membership_filter.isdigit():
+        users_queryset = users_queryset.filter(membership_id=membership_filter)
+    
+    # Get all users for processing (handle corrupted data gracefully)
+    users_list = []
+    corrupted_data_count = 0
+    
+    for user in users_queryset:
+        try:
+            # Validate membership data if exists
+            if user.membership:
+                # Test decimal fields for corruption
+                test_monthly = Decimal(str(user.membership.monthly_fee))
+                test_annual = Decimal(str(user.membership.annual_fee))
+                
+            users_list.append(user)
+        except (InvalidOperation, ValueError) as e:
+            corrupted_data_count += 1
+            continue
+    
+    # Get all membership types with validation
+    membership_types_list = []
+    corrupted_types_count = 0
+    
+    for membership_type in MembershipType.objects.all():
+        try:
+            # Validate decimal fields
+            test_monthly = Decimal(str(membership_type.monthly_fee))
+            test_annual = Decimal(str(membership_type.annual_fee))
+            membership_types_list.append(membership_type)
+        except (InvalidOperation, ValueError):
+            corrupted_types_count += 1
+            continue
+    
+    # Calculate statistics
+    total_users_with_membership = len([u for u in users_list if u.membership])
+    total_users_without_membership = len([u for u in users_list if not u.membership])
+    total_membership_types = len(membership_types_list)
+    
+    # Membership distribution
+    membership_distribution = {}
+    for user in users_list:
+        if user.membership:
+            name = user.membership.name
+            membership_distribution[name] = membership_distribution.get(name, 0) + 1
+    
+    # Most popular membership
+    most_popular_membership = max(membership_distribution.items(), key=lambda x: x[1]) if membership_distribution else None
+    
+    # Add warning messages for corrupted data
+    if corrupted_data_count > 0:
+        messages.warning(request, f"Warning: {corrupted_data_count} users with corrupted membership data were skipped.")
+    
+    if corrupted_types_count > 0:
+        messages.warning(request, f"Warning: {corrupted_types_count} membership types with corrupted data were skipped.")
     
     context = {
-        'users': users,
-        'membership_types': membership_types,
+        'users': users_list,
+        'membership_types': membership_types_list,
+        'search_query': search_query,
+        'membership_filter': membership_filter,
+        
+        # Statistics
+        'total_users_with_membership': total_users_with_membership,
+        'total_users_without_membership': total_users_without_membership,
+        'total_membership_types': total_membership_types,
+        'membership_distribution': membership_distribution,
+        'most_popular_membership': most_popular_membership,
+        
+        # Additional data
+        'total_users': len(users_list),
+        
+        # Tab and form state
+        'active_tab': active_tab,
+        'create_form': create_form,
+        'edit_form': edit_form,
+        'edit_membership': edit_membership,
     }
     
     return render(request, 'manager/manage_memberships.html', context)
 
-# @login_required
-# def unlock_accounts(request):
-#     if request.user.role != 'manager':
-#         from django.http import HttpResponseForbidden
-#         return HttpResponseForbidden("You don't have permission to unlock accounts.")
+
+
+
+
+@login_required
+def update_membership(request):
+    """Handle inline membership assignment for users"""
+    if request.user.role not in ['manager', 'admin']:
+        from django.http import JsonResponse
+        return JsonResponse({'success': False, 'error': 'Permission denied'})
     
-#     from users.models import User
-#     from django.contrib import messages
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        membership_id = request.POST.get('membership_id')
+        
+        try:
+            user = User.objects.get(id=user_id)
+            
+            if membership_id == '' or membership_id == 'none':
+                # Remove membership
+                old_membership = user.membership.name if user.membership else None
+                user.membership = None
+                user.save()
+                messages.success(request, f"Membership removed from {user.get_full_name() or user.username}")
+            else:
+                # Assign new membership
+                membership_type = MembershipType.objects.get(id=membership_id)
+                old_membership = user.membership.name if user.membership else None
+                user.membership = membership_type
+                user.save()
+                
+                if old_membership:
+                    messages.success(request, f"Membership updated from {old_membership} to {membership_type.name} for {user.get_full_name() or user.username}")
+                else:
+                    messages.success(request, f"Membership {membership_type.name} assigned to {user.get_full_name() or user.username}")
+            
+            return redirect('users:manage_memberships')
+            
+        except User.DoesNotExist:
+            messages.error(request, "User not found")
+        except MembershipType.DoesNotExist:
+            messages.error(request, "Membership type not found")
+        except Exception as e:
+            messages.error(request, f"Error updating membership: {str(e)}")
     
-#     # Get locked accounts
-#     locked_users = User.objects.filter(account_locked_until__isnull=False)
+    return redirect('users:manage_memberships')
+
+
+
+
+
+@login_required
+def delete_membership_type(request, membership_id):
+    """Delete a membership type with safety checks"""
+    if request.user.role not in ['manager', 'admin']:
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden("You don't have permission to manage membership types.")
     
-#     if request.method == 'POST':
-#         user_id = request.POST.get('user_id')
-#         if user_id:
-#             try:
-#                 user = User.objects.get(id=user_id)
-#                 user.reset_lock_status()
-#                 messages.success(request, f'Account for {user.username} has been unlocked.')
-#             except User.DoesNotExist:
-#                 messages.error(request, 'User not found.')
+    try:
+        membership_type = MembershipType.objects.get(id=membership_id)
+        
+        # Check if any users are assigned to this membership type
+        user_count = User.objects.filter(membership=membership_type).count()
+        
+        if user_count > 0:
+            messages.error(request, f"Cannot delete membership type '{membership_type.name}' because {user_count} user(s) are currently assigned to it. Please reassign these users first.")
+        else:
+            name = membership_type.name
+            membership_type.delete()
+            messages.success(request, f"Membership type '{name}' deleted successfully!")
+            
+    except MembershipType.DoesNotExist:
+        messages.error(request, "Membership type not found")
+    except Exception as e:
+        messages.error(request, f"Error deleting membership type: {str(e)}")
     
-#     context = {
-#         'locked_users': locked_users,
-#     }
+    return redirect('users:manage_memberships')
+
+
+@login_required
+def unlock_accounts(request):
+    """View for managing locked accounts (Manager + Admin access)"""
+    if request.user.role not in ['manager', 'admin']:
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden("You don't have permission to manage locked accounts.")
     
-#     return render(request, 'manager/unlock_accounts.html', context)
+    from users.models import User
+    from django.db.models import Q
+    
+    # Handle GET parameters for lock user form
+    lock_user_id = request.GET.get('lock')
+    lock_user = None
+    if lock_user_id and lock_user_id.isdigit() and request.user.role == 'admin':
+        try:
+            lock_user = User.objects.get(
+                id=lock_user_id,
+                account_locked_until__isnull=True,
+                role__in=['member', 'librarian']
+            )
+        except User.DoesNotExist:
+            messages.error(request, "User not found or not eligible for locking")
+
+    # Handle POST requests for unlock/lock actions
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        user_id = request.POST.get('user_id')
+        reason = request.POST.get('reason', '')
+        
+        if user_id:
+            try:
+                user = User.objects.get(id=user_id)
+                
+                if action == 'unlock':
+                    user.reset_lock_status(performed_by=request.user, reason=reason)
+                    messages.success(request, f'Account for {user.get_full_name() or user.username} has been unlocked.')
+                    return redirect('users:unlock_accounts')
+                
+                elif action == 'lock' and request.user.role == 'admin':
+                    duration_minutes = request.POST.get('duration_minutes')
+                    try:
+                        duration = int(duration_minutes) if duration_minutes else None
+                    except ValueError:
+                        duration = None
+                    
+                    user.lock_account_manually(
+                        performed_by=request.user,
+                        reason=reason,
+                        duration_minutes=duration
+                    )
+                    messages.success(request, f'Account for {user.get_full_name() or user.username} has been locked.')
+                    return redirect('users:unlock_accounts')
+                
+                else:
+                    messages.error(request, 'Invalid action or insufficient permissions.')
+                    
+            except User.DoesNotExist:
+                messages.error(request, 'User not found.')
+            except Exception as e:
+                messages.error(request, f'Error performing action: {str(e)}')
+    
+    # Get search parameter
+    search_query = request.GET.get('search', '').strip()
+    
+    # Get locked accounts with user details
+    locked_users = User.objects.filter(account_locked_until__isnull=False).select_related('membership')
+    
+    # Apply search filter
+    if search_query:
+        locked_users = locked_users.filter(
+            Q(username__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(email__icontains=search_query)
+        )
+    
+    # Get all users for admin lock functionality (excluding locked ones)
+    all_users = User.objects.filter(
+        account_locked_until__isnull=True,
+        role__in=['member', 'librarian']
+    ).select_related('membership') if request.user.role == 'admin' else None
+    
+    # Apply search to all users too
+    if all_users and search_query:
+        all_users = all_users.filter(
+            Q(username__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(email__icontains=search_query)
+        )
+    
+
+    
+    # Statistics
+    total_locked = User.objects.filter(account_locked_until__isnull=False).count()
+    locked_today = User.objects.filter(
+        account_locked_until__isnull=False,
+        last_failed_attempt__date=timezone.now().date()
+    ).count()
+    unlocked_today = 0  # Removed audit log feature
+    
+    context = {
+        'locked_users': locked_users,
+        'all_users': all_users,
+        'search_query': search_query,
+        'is_admin': request.user.role == 'admin',
+        'now': timezone.now(),
+        'lock_user': lock_user,
+        # Statistics
+        'total_locked': total_locked,
+        'locked_today': locked_today,
+        'unlocked_today': unlocked_today,
+    }
+    
+    return render(request, 'manager/unlock_accounts.html', context)
 
 @login_required
 def user_list(request):

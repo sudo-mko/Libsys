@@ -98,9 +98,23 @@ class User(AbstractUser):
             
         self.save()
     
-    def reset_lock_status(self):
+    def reset_lock_status(self, performed_by=None, reason=""):
         """Reset account lock status (for successful login or manual unlock)"""
         self.account_locked_until = None
+        self.failed_login_attempts = 0  # Reset failed attempts on unlock
+        self.save()
+    
+    def lock_account_manually(self, performed_by, reason="", duration_minutes=None):
+        """Manually lock account (admin action)"""
+        from django.conf import settings
+        from datetime import timedelta
+        
+        # Use provided duration or default from settings
+        if duration_minutes is None:
+            lock_settings = getattr(settings, 'ACCOUNT_LOCK_SETTINGS', {})
+            duration_minutes = lock_settings.get('LOCK_DURATION_MINUTES', 30)
+        
+        self.account_locked_until = timezone.now() + timedelta(minutes=duration_minutes)
         self.save()
     
     def is_password_expired(self):
@@ -126,5 +140,3 @@ class User(AbstractUser):
         """Force user to change password on next login"""
         self.password_change_required = True
         self.save()
-
-

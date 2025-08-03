@@ -91,136 +91,90 @@
         {% csrf_token %}
         
         <!-- Membership Cards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            
-            <!-- Student Member Plan -->
-            <div class="membership-card bg-white rounded-xl border-2 border-gray-200 p-8 hover:border-indigo-300" data-plan="student">
+        <div class="grid grid-cols-1 md:grid-cols-{{ membership_types|length }} gap-8 mb-8">
+            {% for membership_type in membership_types %}
+            <!-- {{ membership_type.name }} Plan -->
+            <div class="membership-card bg-white rounded-xl border-2 border-gray-200 p-8 hover:border-indigo-300 {% if forloop.last and membership_types|length >= 3 %}popular border-green-400{% endif %}" 
+                 data-plan="{{ membership_type.id }}">
+                
+                {% if forloop.last and membership_types|length >= 3 %}
+                <div class="popular-badge">Most Popular</div>
+                {% endif %}
+                
                 <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-gray-500 uppercase tracking-wide mb-2">Student Member</h3>
+                    <h3 class="text-lg font-semibold text-gray-500 uppercase tracking-wide mb-2">{{ membership_type.name }}</h3>
                     <div class="price-container">
-                        <span class="text-4xl font-bold text-gray-900 monthly-price">30</span>
-                        <span class="text-4xl font-bold text-gray-900 annual-price hidden">300</span>
+                        <span class="text-4xl font-bold text-gray-900 monthly-price">{{ membership_type.monthly_fee|floatformat:0 }}</span>
+                        <span class="text-4xl font-bold text-gray-900 annual-price hidden">{{ membership_type.annual_fee|floatformat:0 }}</span>
                         <span class="text-gray-500 ml-2 billing-period">MVR / month</span>
                     </div>
-                    <p class="text-gray-600 mt-2">Perfect for students</p>
+                    <p class="text-gray-600 mt-2">
+                        {% if 'Student' in membership_type.name %}Perfect for students
+                        {% elif 'Basic' in membership_type.name %}Great for casual readers
+                        {% elif 'Premium' in membership_type.name %}Best for avid readers
+                        {% else %}Choose your reading experience{% endif %}
+                    </p>
                 </div>
                 
                 <ul class="space-y-3 mb-8">
                     <li class="flex items-center">
                         <i class="fas fa-check feature-check mr-3"></i>
-                        <span>Borrow up to 4 books</span>
+                        <span>Borrow up to {{ membership_type.max_books }} books</span>
                     </li>
                     <li class="flex items-center">
                         <i class="fas fa-check feature-check mr-3"></i>
-                        <span>21-day loan period</span>
+                        <span>{{ membership_type.loan_period_days }}-day loan period</span>
                     </li>
                     <li class="flex items-center">
                         <i class="fas fa-check feature-check mr-3"></i>
-                        <span>Basic catalog access</span>
+                        <span>Full catalog access</span>
                     </li>
                     <li class="flex items-center">
                         <i class="fas fa-check feature-check mr-3"></i>
                         <span>Email notifications</span>
                     </li>
+                    {% if membership_type.extension_days > 0 %}
+                    <li class="flex items-center">
+                        <i class="fas fa-check feature-check mr-3"></i>
+                        <span>{{ membership_type.extension_days }}-day loan extensions</span>
+                    </li>
+                    {% endif %}
+                    {% if 'Student' in membership_type.name %}
                     <li class="flex items-center">
                         <i class="fas fa-graduation-cap feature-check mr-3"></i>
                         <span>Student discount rate</span>
                     </li>
-                </ul>
-                
-                <input type="radio" name="selected_plan" value="student" class="plan-radio hidden" />
-                <button type="button" class="select-plan-btn w-full py-3 px-6 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:border-indigo-500 hover:text-indigo-600 transition duration-200">
-                    Get Started
-                </button>
-            </div>
-
-            <!-- Basic Member Plan -->
-            <div class="membership-card bg-white rounded-xl border-2 border-gray-200 p-8 hover:border-indigo-300" data-plan="basic">
-                <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-gray-500 uppercase tracking-wide mb-2">Basic Member</h3>
-                    <div class="price-container">
-                        <span class="text-4xl font-bold text-gray-900 monthly-price">50</span>
-                        <span class="text-4xl font-bold text-gray-900 annual-price hidden">500</span>
-                        <span class="text-gray-500 ml-2 billing-period">MVR / month</span>
-                    </div>
-                    <p class="text-gray-600 mt-2">Great for casual readers</p>
-                </div>
-                
-                <ul class="space-y-3 mb-8">
-                    <li class="flex items-center">
-                        <i class="fas fa-check feature-check mr-3"></i>
-                        <span>Borrow up to 3 books</span>
-                    </li>
-                    <li class="flex items-center">
-                        <i class="fas fa-check feature-check mr-3"></i>
-                        <span>14-day loan period</span>
-                    </li>
-                    <li class="flex items-center">
-                        <i class="fas fa-check feature-check mr-3"></i>
-                        <span>Full catalog access</span>
-                    </li>
-                    <li class="flex items-center">
-                        <i class="fas fa-check feature-check mr-3"></i>
-                        <span>Email notifications</span>
-                    </li>
-                    <li class="flex items-center">
-                        <i class="fas fa-check feature-check mr-3"></i>
-                        <span>Standard borrowing</span>
-                    </li>
-                </ul>
-                
-                <input type="radio" name="selected_plan" value="basic" class="plan-radio hidden" />
-                <button type="button" class="select-plan-btn w-full py-3 px-6 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:border-indigo-500 hover:text-indigo-600 transition duration-200">
-                    Get Started
-                </button>
-            </div>
-
-            <!-- Premium Member Plan (Popular) -->
-            <div class="membership-card popular bg-white rounded-xl border-2 border-green-400 p-8 relative" data-plan="premium">
-                <div class="popular-badge">Most Popular</div>
-                
-                <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-gray-500 uppercase tracking-wide mb-2">Premium Member</h3>
-                    <div class="price-container">
-                        <span class="text-4xl font-bold text-gray-900 monthly-price">75</span>
-                        <span class="text-4xl font-bold text-gray-900 annual-price hidden">750</span>
-                        <span class="text-gray-500 ml-2 billing-period">MVR / month</span>
-                    </div>
-                    <p class="text-gray-600 mt-2">Best for avid readers</p>
-                </div>
-                
-                <ul class="space-y-3 mb-8">
-                    <li class="flex items-center">
-                        <i class="fas fa-check feature-check mr-3"></i>
-                        <span>Borrow up to 5 books</span>
-                    </li>
-                    <li class="flex items-center">
-                        <i class="fas fa-check feature-check mr-3"></i>
-                        <span>14-day loan period</span>
-                    </li>
-                    <li class="flex items-center">
-                        <i class="fas fa-check feature-check mr-3"></i>
-                        <span>Full catalog access</span>
-                    </li>
+                    {% elif 'Premium' in membership_type.name %}
                     <li class="flex items-center">
                         <i class="fas fa-check feature-check mr-3"></i>
                         <span>Priority reservations</span>
                     </li>
                     <li class="flex items-center">
                         <i class="fas fa-check feature-check mr-3"></i>
-                        <span>7-day loan extensions</span>
-                    </li>
-                    <li class="flex items-center">
-                        <i class="fas fa-check feature-check mr-3"></i>
                         <span>Digital resources access</span>
                     </li>
+                    {% else %}
+                    <li class="flex items-center">
+                        <i class="fas fa-check feature-check mr-3"></i>
+                        <span>Standard borrowing</span>
+                    </li>
+                    {% endif %}
                 </ul>
                 
-                <input type="radio" name="selected_plan" value="premium" class="plan-radio hidden" />
-                <button type="button" class="select-plan-btn w-full py-3 px-6 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition duration-200">
+                <input type="radio" name="selected_plan" value="{{ membership_type.id }}" class="plan-radio hidden" />
+                <button type="button" class="select-plan-btn w-full py-3 px-6 {% if forloop.last and membership_types|length >= 3 %}bg-green-500 text-white hover:bg-green-600{% else %}border-2 border-gray-300 text-gray-700 hover:border-indigo-500 hover:text-indigo-600{% endif %} font-semibold rounded-lg transition duration-200">
                     Get Started
                 </button>
             </div>
+            {% empty %}
+            <div class="col-span-full text-center py-12">
+                <div class="text-gray-500">
+                    <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2">No Membership Plans Available</h3>
+                    <p>Please contact the library administration for membership options.</p>
+                </div>
+            </div>
+            {% endfor %}
         </div>
 
         <!-- Action Button -->
@@ -292,15 +246,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 c.classList.remove('selected');
                 c.querySelector('.plan-radio').checked = false;
                 const btn = c.querySelector('.select-plan-btn');
-                if (c.dataset.plan === 'student') {
-                    btn.textContent = 'Get Started';
-                    btn.className = 'select-plan-btn w-full py-3 px-6 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:border-indigo-500 hover:text-indigo-600 transition duration-200';
-                } else if (c.dataset.plan === 'basic') {
-                    btn.textContent = 'Get Started';
-                    btn.className = 'select-plan-btn w-full py-3 px-6 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:border-indigo-500 hover:text-indigo-600 transition duration-200';
-                } else if (c.dataset.plan === 'premium') {
+                
+                // Reset button based on card styling
+                if (c.classList.contains('popular')) {
                     btn.textContent = 'Get Started';
                     btn.className = 'select-plan-btn w-full py-3 px-6 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition duration-200';
+                } else {
+                    btn.textContent = 'Get Started';
+                    btn.className = 'select-plan-btn w-full py-3 px-6 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:border-indigo-500 hover:text-indigo-600 transition duration-200';
                 }
             });
             

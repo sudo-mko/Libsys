@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import User
+from .models import User, MembershipType
 
 class UserRegistrationForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -52,3 +52,54 @@ class UserLoginForm(AuthenticationForm):
         'class': 'w-full h-12 px-4 py-3 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600',
         'placeholder': '••••••••'
     }))
+
+class MembershipTypeForm(forms.ModelForm):
+    class Meta:
+        model = MembershipType
+        fields = ['name', 'monthly_fee', 'annual_fee', 'max_books', 'loan_period_days', 'extension_days']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'placeholder': 'e.g., Premium Member'
+            }),
+            'monthly_fee': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'min': '0',
+                'max': '10000',
+                'step': '0.01',
+                'placeholder': '19.99'
+            }),
+            'annual_fee': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'min': '0',
+                'max': '100000',
+                'step': '0.01',
+                'placeholder': '199.99'
+            }),
+            'max_books': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'min': '1',
+                'max': '100',
+                'placeholder': '5'
+            }),
+            'loan_period_days': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'min': '1',
+                'max': '365',
+                'placeholder': '14'
+            }),
+            'extension_days': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'min': '1',
+                'max': '365',
+                'placeholder': '7'
+            }),
+        }
+        labels = {
+            'name': 'Name *',
+            'monthly_fee': 'Monthly Fee (MVR) *',
+            'annual_fee': 'Annual Fee (MVR) *',
+            'max_books': 'Max Books *',
+            'loan_period_days': 'Loan Period (Days) *',
+            'extension_days': 'Extension Days *',
+        }
