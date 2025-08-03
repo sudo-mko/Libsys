@@ -158,12 +158,7 @@
                 <div class="flex justify-between">
                     <span class="text-sm text-gray-600">Success Rate:</span>
                     <span class="text-sm font-medium">
-                        {% if report.failed_logins > 0 %}
-                            {% widthratio report.failed_logins report.total_security_events 100 as failure_rate %}
-                            {{ failure_rate|sub:100|default:0 }}%
-                        {% else %}
-                            100%
-                        {% endif %}
+                        {{ report.success_rate|default:100 }}%
                     </span>
                 </div>
                 <div class="flex justify-between">

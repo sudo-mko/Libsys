@@ -279,87 +279,30 @@ def create_user(request):
         return HttpResponseForbidden("You don't have permission to create users.")
     
     from django.contrib import messages
-    from django.contrib.auth.forms import UserCreationForm
+    from .forms import AdminUserCreationForm
     
     if request.method == 'POST':
-        # Get form data
-        username = request.POST.get('username')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        email = request.POST.get('email')
-        phone_number = request.POST.get('phone_number')
-        role = request.POST.get('role')
-        password1 = request.POST.get('password1')
-        password2 = request.POST.get('password2')
-        
-        # Basic validation
-        errors = []
-        if not username:
-            errors.append('Username is required.')
-        if not first_name:
-            errors.append('First name is required.')
-        if not last_name:
-            errors.append('Last name is required.')
-        if not email:
-            errors.append('Email is required.')
-        if not role:
-            errors.append('Role is required.')
-        if not password1:
-            errors.append('Password is required.')
-        if password1 != password2:
-            errors.append('Passwords do not match.')
-        
-        # Check if username already exists
-        if User.objects.filter(username=username).exists():
-            errors.append('Username already exists.')
-        
-        # Check if email already exists
-        if User.objects.filter(email=email).exists():
-            errors.append('Email already exists.')
-        
-        if errors:
-            for error in errors:
-                messages.error(request, error)
-            # Return form data for re-display
-            context = {
-                'form': {
-                    'username': {'value': username},
-                    'first_name': {'value': first_name},
-                    'last_name': {'value': last_name},
-                    'email': {'value': email},
-                    'phone_number': {'value': phone_number},
-                    'role': {'value': role},
-                    'username': {'errors': []},
-                    'first_name': {'errors': []},
-                    'last_name': {'errors': []},
-                    'email': {'errors': []},
-                    'phone_number': {'errors': []},
-                    'role': {'errors': []},
-                    'password1': {'errors': []},
-                    'password2': {'errors': []},
-                }
-            }
-            return render(request, 'manager/create_user.html', context)
-        
-        try:
-            # Create user
-            user = User.objects.create_user(
-                username=username,
-                email=email,
-                password=password1,
-                first_name=first_name,
-                last_name=last_name,
-                phone_number=phone_number,
-                role=role
-            )
-            messages.success(request, f'User {username} created successfully!')
-            return redirect('users:user_list')
-        except Exception as e:
-            messages.error(request, f'Error creating user: {str(e)}')
-            return render(request, 'manager/create_user.html', {'form': {}})
+        form = AdminUserCreationForm(request.POST)
+        if form.is_valid():
+            try:
+                # Create user with proper validation
+                user = form.save(commit=False)
+                user.set_password(form.cleaned_data['password1'])
+                user.save()
+                
+                messages.success(request, f'User {user.username} created successfully!')
+                return redirect('users:user_list')
+            except Exception as e:
+                messages.error(request, f'Error creating user: {str(e)}')
+        else:
+            # Form validation failed - errors will be displayed in template
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
     else:
-        context = {'form': {}}
+        form = AdminUserCreationForm()
     
+    context = {'form': form}
     return render(request, 'manager/create_user.html', context)
 
 @login_required
