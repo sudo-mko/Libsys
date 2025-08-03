@@ -121,19 +121,18 @@ python manage.py createsuperuser
 If you have fixture files or want to create some sample data:
 
 ```bash
-# Create sample data through Django admin or shell
-python manage.py shell
+# Load initial data
+python manage.py loaddata library/fixtures/initial_data.json
 ```
 
 ## 🏃‍♂️ Running the Project
 
 ### 1. Start Tailwind CSS Build Process
 
-In one terminal, navigate to the theme directory and start the CSS build:
+In one terminal, navigate to root project directory and start the CSS build:
 
 ```bash
-cd lms/theme/static_src
-npm run dev
+python mangae.py tailwind start
 ```
 
 This will watch for changes and rebuild your CSS automatically.
@@ -156,24 +155,28 @@ Visit `http://127.0.0.1:8000/admin/` and log in with the superuser credentials y
 ## 📁 Project Structure
 
 ```
-library-management-system/
+Libsys/
 ├── lms/                          # Main Django project
-│   ├── config/                   # Project settings
-│   ├── library/                  # Core library app (books, authors, categories)
-│   ├── users/                    # User management and authentication
+│   ├── admin_dashboard/          # Admin dashboard app
 │   ├── borrow/                   # Book borrowing functionality
-│   ├── reservations/             # Book reservation system
-│   ├── fines/                    # Fine management
 │   ├── branches/                 # Library branch management
+│   ├── config/                   # Project settings
+│   ├── fines/                    # Fine management
+│   ├── library/                  # Core library app (books, authors, categories)
+│   │   ├── fixtures/             # Initial data fixtures
+│   │   └── templates/            # Library templates
+│   ├── media/                    # Uploaded files (book covers, etc.)
+│   ├── reservations/             # Book reservation system
 │   ├── theme/                    # Tailwind CSS theme and templates
-│   │   ├── templates/            # Django templates
 │   │   ├── static/               # Compiled CSS
-│   │   └── static_src/           # Tailwind source files
-│   ├── media/                    # Uploaded files (book covers)
+│   │   ├── static_src/           # Tailwind source files
+│   │   └── templates/            # Theme templates
+│   ├── users/                    # User management and authentication
 │   ├── manage.py                 # Django management script
 │   └── requirements.txt          # Python dependencies
 ├── venv/                         # Virtual environment
-└── README.md                     # This file
+├── .gitignore                    # Git ignore rules
+├── README.md                     # Project documentation
 ```
 
 ## 🔧 Configuration

@@ -8,6 +8,32 @@ All your work should be inside the `tests.py` file of each app.
 
 ---
 
+## **Expanded Test Areas (Must Cover)**
+
+Your tests should now also include these new features and logic:
+
+- **Account Lockout Logic**
+  - Test locking after too many failed login attempts.
+  - Test lock duration, auto-unlock, and manual unlock by manager/admin.
+  - Test that only allowed roles are locked.
+  - Test reset of failed attempts.
+- **Password Expiry & Change Policy**
+  - Test password expiry for admin/manager after 6 months.
+  - Test forced password change and marking as changed.
+- **Membership Management**
+  - Test assigning/removing/upgrading memberships.
+  - Test that membership types in use cannot be deleted.
+  - Test membership stats and distribution.
+- **Role-Based Permissions**
+  - Test access to management/admin views for allowed/forbidden roles.
+- **User CRUD and Validation**
+  - Test create, edit, delete (including edge cases, required fields, and forbidden actions).
+- **Login/Registration Edge Cases**
+  - Test login for locked/expired users and wrong credentials.
+  - Test registration with valid/invalid data.
+- **Statistics/Reporting**
+  - Test accuracy of dashboard/user/membership stats.
+
 ## **Step-by-Step Instructions**
 
 ### 1. **Understand What to Test**
