@@ -43,17 +43,33 @@ class Borrowing(models.Model):
         return self.pickup_code
 
     def is_code_expired(self):
-        """Check if the pickup code has expired (3 days after approval)"""
+        """Check if the pickup code has expired (configurable days after approval)"""
         if not self.approved_date:
             return False
-        expiration_date = self.approved_date + timedelta(days=3)
+        
+        # Import here to avoid circular imports
+        try:
+            from utils.system_settings import SystemSettingsHelper
+            expiry_days = SystemSettingsHelper.get_pickup_code_expiry_days(3)
+        except ImportError:
+            expiry_days = 3  # Fallback to hardcoded value
+            
+        expiration_date = self.approved_date + timedelta(days=expiry_days)
         return timezone.now() > expiration_date
 
     def days_until_code_expiry(self):
         """Calculate days until code expires"""
         if not self.approved_date:
             return None
-        expiration_date = self.approved_date + timedelta(days=3)
+            
+        # Import here to avoid circular imports
+        try:
+            from utils.system_settings import SystemSettingsHelper
+            expiry_days = SystemSettingsHelper.get_pickup_code_expiry_days(3)
+        except ImportError:
+            expiry_days = 3  # Fallback to hardcoded value
+            
+        expiration_date = self.approved_date + timedelta(days=expiry_days)
         days_left = (expiration_date - timezone.now()).days
         return max(0, days_left)  # Don't return negative days
 

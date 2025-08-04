@@ -114,11 +114,26 @@ class SessionTimeoutMiddleware:
             pass
     
     def get_timeout_minutes(self, user):
-        """Get timeout minutes based on user role"""
-        # Default timeout for normal users (members, librarians)
-        default_timeout = 15
+        """Get timeout minutes based on user role from system settings"""
+        # Try to get timeout from system settings first
+        try:
+            from utils.system_settings import SystemSettingsHelper
+            
+            # Get role-specific timeout or fallback to general setting
+            role_specific_key = f"{user.role}_session_timeout_minutes"
+            timeout = SystemSettingsHelper.get_setting(role_specific_key, None, 'number')
+            
+            if timeout is None:
+                # Fallback to general session timeout setting
+                timeout = SystemSettingsHelper.get_session_timeout_minutes(15)
+            
+            return timeout
+            
+        except ImportError:
+            pass
         
-        # Check if user role should have different timeout
+        # Fallback to hardcoded values if system settings not available
+        default_timeout = 15
         role_timeouts = getattr(settings, 'SESSION_TIMEOUT_BY_ROLE', {
             'member': 15,
             'librarian': 15,

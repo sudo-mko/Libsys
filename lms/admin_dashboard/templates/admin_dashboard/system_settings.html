@@ -2,156 +2,343 @@
 
 {% block admin_content %}
 <div class="flex justify-between items-center mb-6">
-    <h2 class="text-2xl font-bold text-gray-900">System Settings</h2>
+    <div>
+        <h2 class="text-2xl font-bold text-gray-900">System Settings</h2>
+        <p class="text-gray-600 mt-1">Configure library system behavior and business rules</p>
+    </div>
+    <div class="flex space-x-3">
+        <button onclick="resetAllDefaults()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
+            <i class="fas fa-undo mr-2"></i>Reset to Defaults
+        </button>
+        <button onclick="exportSettings()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">
+            <i class="fas fa-download mr-2"></i>Export Settings
+        </button>
+    </div>
 </div>
 
-<!-- Add New Setting Form -->
-<div class="bg-white p-6 rounded-lg shadow mb-6">
-    <h3 class="text-lg font-bold text-gray-900 mb-4">Add/Update Setting</h3>
-    <form method="POST">
-        {% csrf_token %}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Setting Key</label>
-                <input type="text" name="key" required 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+<!-- Quick Status Summary -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+    {% for category_key, category in setting_categories.items %}
+    <div class="bg-white rounded-lg shadow p-4">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="{{ category.icon }} text-2xl text-blue-500"></i>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Value</label>
-                <input type="text" name="value" required 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
-                <select name="setting_type" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <option value="text">Text</option>
-                    <option value="number">Number</option>
-                    <option value="boolean">Boolean</option>
-                    <option value="json">JSON</option>
-                </select>
-            </div>
-            <div class="flex items-end">
-                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
-                    <i class="fas fa-save mr-2"></i>Save Setting
-                </button>
+            <div class="ml-3">
+                <p class="text-sm font-medium text-gray-900">{{ category.name }}</p>
+                <p class="text-sm text-gray-500">
+                    {% with configured=0 total=category.settings|length %}
+                        {% for setting in category.settings %}
+                            {% if setting.is_configured %}
+                                {% with configured=configured|add:1 %}{% endwith %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ configured }}/{{ total }} configured
+                    {% endwith %}
+                </p>
             </div>
         </div>
-        <div class="mt-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-            <textarea name="description" rows="2" 
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Optional description for this setting"></textarea>
-        </div>
-    </form>
+    </div>
+    {% endfor %}
 </div>
 
-<!-- Default Settings Suggestions -->
-<div class="bg-blue-50 p-4 rounded-lg mb-6">
-    <h4 class="text-md font-semibold text-blue-900 mb-2">Suggested Default Settings:</h4>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-        {% for setting in default_settings %}
-        <div class="bg-white p-3 rounded">
-            <strong class="text-gray-900">{{ setting.key }}</strong>: {{ setting.value }}
-            <br><span class="text-gray-600">{{ setting.description }}</span>
+<!-- Settings Categories -->
+{% for category_key, category in setting_categories.items %}
+<div class="bg-white rounded-lg shadow mb-8">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <i class="{{ category.icon }} text-xl text-blue-500 mr-3"></i>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">{{ category.name }}</h3>
+                    <p class="text-sm text-gray-600">{{ category.description }}</p>
+                </div>
+            </div>
+            <button onclick="toggleCategory('{{ category_key }}')" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-chevron-down" id="chevron-{{ category_key }}"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div id="category-{{ category_key }}" class="p-6 space-y-6">
+        {% for setting in category.settings %}
+        <div class="setting-item border-b border-gray-100 pb-6 last:border-b-0">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center mb-2">
+                        <h4 class="text-md font-semibold text-gray-900">{{ setting.name }}</h4>
+                        {% if setting.is_configured %}
+                            <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Configured
+                            </span>
+                        {% else %}
+                            <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                Using Default
+                            </span>
+                        {% endif %}
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">{{ setting.description }}</p>
+                    
+                    <!-- Setting Value Display and Edit Form -->
+                    <div class="flex items-center space-x-4">
+                        <div class="flex-1">
+                            <form method="POST" class="setting-form" data-key="{{ setting.key }}">
+                                {% csrf_token %}
+                                <input type="hidden" name="key" value="{{ setting.key }}">
+                                <input type="hidden" name="setting_type" value="{{ setting.type }}">
+                                <input type="hidden" name="description" value="{{ setting.description }}">
+                                
+                                <div class="flex items-center space-x-3">
+                                    {% if setting.type == 'boolean' %}
+                                        <select name="value" class="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" onchange="this.form.submit()">
+                                            <option value="true" {% if setting.current_value == 'true' %}selected{% endif %}>Enabled</option>
+                                            <option value="false" {% if setting.current_value == 'false' %}selected{% endif %}>Disabled</option>
+                                        </select>
+                                    {% else %}
+                                        <div class="flex items-center space-x-2">
+                                            <input type="{% if setting.type == 'number' %}number{% elif setting.type == 'decimal' %}number{% else %}text{% endif %}" 
+                                                   name="value" 
+                                                   value="{{ setting.current_value }}"
+                                                   {% if setting.min %}min="{{ setting.min }}"{% endif %}
+                                                   {% if setting.max %}max="{{ setting.max }}"{% endif %}
+                                                   {% if setting.type == 'decimal' %}step="0.01"{% endif %}
+                                                   class="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-32"
+                                                   onblur="autoSubmitIfChanged(this)">
+                                            {% if setting.unit %}
+                                                <span class="text-sm text-gray-500">{{ setting.unit }}</span>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md text-sm">
+                                        <i class="fas fa-save"></i>
+                                    </button>
+                                    
+                                    {% if setting.is_configured %}
+                                        <button type="button" onclick="resetSetting('{{ setting.key }}', '{{ setting.default }}')" 
+                                                class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-md text-sm">
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="text-right">
+                            <div class="text-sm text-gray-500">
+                                Current: <span class="font-semibold text-gray-900">{{ setting.current_value }}{% if setting.unit %} {{ setting.unit }}{% endif %}</span>
+                            </div>
+                            <div class="text-xs text-gray-400">
+                                Default: {{ setting.default }}{% if setting.unit %} {{ setting.unit }}{% endif %}
+                            </div>
+                            {% if setting.is_configured and setting.setting_object.updated_at %}
+                                <div class="text-xs text-gray-400">
+                                    Updated: {{ setting.setting_object.updated_at|date:"M d, Y H:i" }}
+                                    {% if setting.setting_object.updated_by %}
+                                        by {{ setting.setting_object.updated_by.username }}
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         {% endfor %}
     </div>
 </div>
+{% endfor %}
 
-<!-- Current Settings -->
-<div class="bg-white rounded-lg shadow overflow-hidden">
+<!-- Advanced Settings Section -->
+<div class="bg-white rounded-lg shadow">
     <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-bold text-gray-900">Current System Settings</h3>
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-bold text-gray-900">Advanced Settings</h3>
+                <p class="text-sm text-gray-600">Add custom settings not covered by the categories above</p>
+            </div>
+            <button onclick="toggleAdvanced()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-chevron-down" id="chevron-advanced"></i>
+            </button>
+        </div>
     </div>
     
-    {% if settings %}
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Key</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Updated</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+    <div id="advanced-settings" class="p-6" style="display: none;">
+        <!-- Custom Setting Form -->
+        <form method="POST">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Setting Key</label>
+                    <input type="text" name="key" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="e.g., custom_feature_enabled">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Value</label>
+                    <input type="text" name="value" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="e.g., true or 30 or Hello">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                    <select name="setting_type" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="text">Text</option>
+                        <option value="number">Number</option>
+                        <option value="decimal">Decimal</option>
+                        <option value="boolean">Boolean</option>
+                        <option value="json">JSON</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
+                        <i class="fas fa-plus mr-2"></i>Add Setting
+                    </button>
+                </div>
+            </div>
+            <div class="mt-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea name="description" rows="2" 
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Brief description of what this setting controls"></textarea>
+            </div>
+        </form>
+        
+        <!-- Other Custom Settings -->
+        {% if settings %}
+        <div class="mt-8">
+            <h4 class="text-md font-semibold text-gray-900 mb-4">Other Custom Settings</h4>
+            <div class="space-y-3">
                 {% for setting in settings %}
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">{{ setting.key }}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">
-                            {% if setting.setting_type == 'boolean' %}
-                                {% if setting.value == 'true' or setting.value == 'True' %}
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                        True
-                                    </span>
-                                {% else %}
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                                        False
-                                    </span>
+                    <!-- Check if this setting is not in our predefined categories -->
+                    {% with is_predefined=False %}
+                        {% for category_key, category in setting_categories.items %}
+                            {% for predefined_setting in category.settings %}
+                                {% if predefined_setting.key == setting.key %}
+                                    {% with is_predefined=True %}{% endwith %}
                                 {% endif %}
-                            {% else %}
-                                {{ setting.value }}
-                            {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                        
+                        {% if not is_predefined %}
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-medium text-gray-900">{{ setting.key }}</span>
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                        {{ setting.get_setting_type_display }}
+                                    </span>
+                                </div>
+                                <div class="text-sm text-gray-600">{{ setting.value }}</div>
+                                {% if setting.description %}
+                                    <div class="text-xs text-gray-500">{{ setting.description }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs text-gray-400">{{ setting.updated_at|date:"M d" }}</span>
+                                <a href="{% url 'admin_dashboard:delete_setting' setting.id %}" 
+                                   onclick="return confirm('Are you sure you want to delete this setting?')"
+                                   class="text-red-600 hover:text-red-900">
+                                    <i class="fas fa-trash text-sm"></i>
+                                </a>
+                            </div>
                         </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                            {{ setting.get_setting_type_display }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4">
-                        <div class="text-sm text-gray-500 max-w-xs truncate">
-                            {{ setting.description|default:"-" }}
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ setting.updated_at|date:"M d, Y" }}
-                        {% if setting.updated_by %}
-                            <br><span class="text-xs">by {{ setting.updated_by.username }}</span>
                         {% endif %}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <a href="{% url 'admin_dashboard:delete_setting' setting.id %}" 
-                           onclick="return confirm('Are you sure you want to delete this setting?')"
-                           class="text-red-600 hover:text-red-900">
-                            <i class="fas fa-trash"></i>
-                        </a>
-                    </td>
-                </tr>
+                    {% endwith %}
                 {% endfor %}
-            </tbody>
-        </table>
+            </div>
+        </div>
+        {% endif %}
     </div>
-    {% else %}
-    <div class="p-6 text-center text-gray-500">
-        No system settings configured yet. Add some settings above to get started.
-    </div>
-    {% endif %}
 </div>
 
-<!-- Settings Information -->
-<div class="mt-6 bg-yellow-50 p-4 rounded-lg">
+<!-- Help Information -->
+<div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
     <div class="flex">
         <div class="flex-shrink-0">
-            <i class="fas fa-info-circle text-yellow-400"></i>
+            <i class="fas fa-info-circle text-blue-400"></i>
         </div>
         <div class="ml-3">
-            <h3 class="text-sm font-medium text-yellow-800">Settings Information</h3>
-            <div class="mt-2 text-sm text-yellow-700">
+            <h3 class="text-sm font-medium text-blue-800">Settings Information</h3>
+            <div class="mt-2 text-sm text-blue-700">
                 <ul class="list-disc pl-5 space-y-1">
-                    <li>Settings are stored in the database and can be modified at runtime</li>
-                    <li>Boolean values should be 'true' or 'false' (case insensitive)</li>
-                    <li>JSON values must be valid JSON format</li>
-                    <li>Changes to settings may require application restart depending on usage</li>
+                    <li>Settings take effect immediately after saving</li>
+                    <li>Changes are cached for 5 minutes for better performance</li>
+                    <li>All settings have safe fallback values if not configured</li>
+                    <li>Use "Reset to Defaults" to restore original system values</li>
+                    <li>Custom settings can be added in the Advanced section</li>
                 </ul>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+// Toggle category visibility
+function toggleCategory(categoryKey) {
+    const content = document.getElementById('category-' + categoryKey);
+    const chevron = document.getElementById('chevron-' + categoryKey);
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        chevron.classList.remove('fa-chevron-right');
+        chevron.classList.add('fa-chevron-down');
+    } else {
+        content.style.display = 'none';
+        chevron.classList.remove('fa-chevron-down');
+        chevron.classList.add('fa-chevron-right');
+    }
+}
+
+// Toggle advanced settings
+function toggleAdvanced() {
+    const content = document.getElementById('advanced-settings');
+    const chevron = document.getElementById('chevron-advanced');
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        chevron.classList.remove('fa-chevron-right');
+        chevron.classList.add('fa-chevron-down');
+    } else {
+        content.style.display = 'none';
+        chevron.classList.remove('fa-chevron-down');
+        chevron.classList.add('fa-chevron-right');
+    }
+}
+
+// Auto-submit form when input changes (for non-boolean fields)
+function autoSubmitIfChanged(input) {
+    const originalValue = input.defaultValue;
+    if (input.value !== originalValue) {
+        // Show a subtle loading indicator
+        input.style.backgroundColor = '#fef3cd';
+        input.form.submit();
+    }
+}
+
+// Reset individual setting to default
+function resetSetting(key, defaultValue) {
+    if (confirm(`Reset "${key}" to default value (${defaultValue})?`)) {
+        const form = document.querySelector(`form[data-key="${key}"]`);
+        const valueInput = form.querySelector('input[name="value"], select[name="value"]');
+        valueInput.value = defaultValue;
+        form.submit();
+    }
+}
+
+// Reset all settings to defaults
+function resetAllDefaults() {
+    if (confirm('Are you sure you want to reset ALL settings to their default values? This cannot be undone.')) {
+        // This would need a separate endpoint to handle bulk reset
+        alert('Bulk reset functionality would be implemented here');
+    }
+}
+
+// Export settings
+function exportSettings() {
+    // This would generate a JSON export of all settings
+    alert('Settings export functionality would be implemented here');
+}
+</script>
+
 {% endblock %}

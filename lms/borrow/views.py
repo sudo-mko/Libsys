@@ -7,6 +7,7 @@ from datetime import timedelta
 from .models import Borrowing, ExtensionRequest
 from .forms import BorrowingForm
 from library.models import Book
+from utils.system_settings import SystemSettingsHelper
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
 from django.utils import timezone
@@ -65,9 +66,15 @@ def borrow_book(request, book_id):
         return_date__isnull=True
     ).count()
     
-    max_books = request.user.membership.max_books
+    # Get max books from membership or system setting fallback
+    if request.user.membership:
+        max_books = request.user.membership.max_books
+    else:
+        max_books = SystemSettingsHelper.get_max_books_per_user(5)
+    
     if active_borrowings_count >= max_books:
-        messages.error(request, f"You have reached your borrowing limit of {max_books} books for your {request.user.membership.name} membership.")
+        membership_name = request.user.membership.name if request.user.membership else "your membership type"
+        messages.error(request, f"You have reached your borrowing limit of {max_books} books for {membership_name}.")
         return redirect('library:book_detail', book_id=book_id)
     
     # Create new borrowing request with pending status
@@ -381,8 +388,14 @@ def pickup_code_entry(request):
                 return render(request, 'pickup_code_entry.html')
             
             # Calculate proper due date based on membership loan period (from pickup date)
-            loan_period_days = borrowing.user.membership.loan_period_days
             pickup_date = timezone.now().date()
+            
+            # Get loan period from membership or system setting fallback
+            if borrowing.user.membership:
+                loan_period_days = borrowing.user.membership.loan_period_days
+            else:
+                loan_period_days = SystemSettingsHelper.get_max_borrowing_days(14)
+            
             due_date = pickup_date + timedelta(days=loan_period_days)
             
             # Complete the borrowing process

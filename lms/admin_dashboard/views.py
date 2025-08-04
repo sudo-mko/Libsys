@@ -9,6 +9,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.conf import settings
 from users.models import MembershipType
 from .models import SystemSetting, AuditLog
+from utils.system_settings import SystemSettingsHelper
 from .signals import get_client_ip
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -298,7 +299,7 @@ def system_settings(request):
                 setting.save()
             
             # Log the action
-            action_type = 'TIMEOUT_SETTINGS_UPDATE' if created else 'TIMEOUT_SETTINGS_UPDATE'
+            action_type = 'SETTING_UPDATE'
             AuditLog.objects.create(
                 user=request.user,
                 action=action_type,
@@ -306,40 +307,197 @@ def system_settings(request):
                 ip_address=get_client_ip(request)
             )
             
+            # Invalidate cache for this setting
+            SystemSettingsHelper.invalidate_cache(setting_key)
+            
             messages.success(request, f"Setting '{setting_key}' {'created' if created else 'updated'} successfully.")
             return redirect('admin_dashboard:system_settings')
     
-    # Default settings to create if they don't exist
-    default_settings = [
-        {
-            'key': 'max_borrowing_days',
-            'value': '14',
-            'setting_type': 'number',
-            'description': 'Maximum number of days a book can be borrowed'
+    # Organize settings by category for better UI
+    setting_categories = {
+        'borrowing': {
+            'name': 'Borrowing & Loans',
+            'icon': 'fas fa-book',
+            'description': 'Settings that control book borrowing behavior',
+            'settings': [
+                {
+                    'key': 'max_books_per_user',
+                    'name': 'Max Books Per User',
+                    'default': '5',
+                    'type': 'number',
+                    'description': 'Maximum number of books a user can borrow simultaneously (fallback if membership limits not set)',
+                    'min': 1,
+                    'max': 50
+                },
+                {
+                    'key': 'max_borrowing_days',
+                    'name': 'Default Loan Period',
+                    'default': '14',
+                    'type': 'number',
+                    'description': 'Default number of days for book loans (fallback if membership periods not set)',
+                    'min': 1,
+                    'max': 365,
+                    'unit': 'days'
+                },
+                {
+                    'key': 'pickup_code_expiry_days',
+                    'name': 'Pickup Code Expiry',
+                    'default': '3',
+                    'type': 'number',
+                    'description': 'Days before approved borrowing pickup codes expire',
+                    'min': 1,
+                    'max': 30,
+                    'unit': 'days'
+                }
+            ]
         },
-        {
-            'key': 'max_books_per_user',
-            'value': '5',
-            'setting_type': 'number',
-            'description': 'Maximum number of books a user can borrow at once'
+        'fines': {
+            'name': 'Fines & Penalties',
+            'icon': 'fas fa-dollar-sign',
+            'description': 'Configure fine calculation rules and rates',
+            'settings': [
+                {
+                    'key': 'fine_tier_1_days',
+                    'name': 'Tier 1 Days',
+                    'default': '3',
+                    'type': 'number',
+                    'description': 'Number of days for tier 1 fine rate (usually 1-3 days)',
+                    'min': 1,
+                    'max': 30,
+                    'unit': 'days'
+                },
+                {
+                    'key': 'fine_tier_1_rate',
+                    'name': 'Tier 1 Rate',
+                    'default': '2.00',
+                    'type': 'decimal',
+                    'description': 'Fine amount per day for tier 1 (early overdue)',
+                    'min': 0.01,
+                    'unit': 'MVR/day'
+                },
+                {
+                    'key': 'fine_tier_2_days',
+                    'name': 'Tier 2 Days',
+                    'default': '7',
+                    'type': 'number',
+                    'description': 'Maximum days for tier 2 fine rate (usually 4-7 days)',
+                    'min': 1,
+                    'max': 30,
+                    'unit': 'days'
+                },
+                {
+                    'key': 'fine_tier_2_rate',
+                    'name': 'Tier 2 Rate',
+                    'default': '5.00',
+                    'type': 'decimal',
+                    'description': 'Fine amount per day for tier 2 (moderate overdue)',
+                    'min': 0.01,
+                    'unit': 'MVR/day'
+                },
+                {
+                    'key': 'fine_tier_3_rate',
+                    'name': 'Tier 3 Rate',
+                    'default': '10.00',
+                    'type': 'decimal',
+                    'description': 'Fine amount per day for tier 3 (severely overdue, 8+ days)',
+                    'min': 0.01,
+                    'unit': 'MVR/day'
+                },
+                {
+                    'key': 'damaged_book_processing_fee',
+                    'name': 'Damaged Book Fee',
+                    'default': '50.00',
+                    'type': 'decimal',
+                    'description': 'Processing fee added to damaged/lost book replacement cost',
+                    'min': 0,
+                    'unit': 'MVR'
+                }
+            ]
         },
-        {
-            'key': 'fine_per_day',
-            'value': '1.00',
-            'setting_type': 'number',
-            'description': 'Fine amount per day for overdue books'
+        'sessions': {
+            'name': 'Session Management',
+            'icon': 'fas fa-clock',
+            'description': 'Control user session timeouts by role',
+            'settings': [
+                {
+                    'key': 'member_session_timeout_minutes',
+                    'name': 'Member Session Timeout',
+                    'default': '15',
+                    'type': 'number',
+                    'description': 'Session timeout for regular library members',
+                    'min': 5,
+                    'max': 480,
+                    'unit': 'minutes'
+                },
+                {
+                    'key': 'librarian_session_timeout_minutes',
+                    'name': 'Librarian Session Timeout',
+                    'default': '15',
+                    'type': 'number',
+                    'description': 'Session timeout for librarian users',
+                    'min': 5,
+                    'max': 480,
+                    'unit': 'minutes'
+                },
+                {
+                    'key': 'manager_session_timeout_minutes',
+                    'name': 'Manager Session Timeout',
+                    'default': '30',
+                    'type': 'number',
+                    'description': 'Session timeout for manager users',
+                    'min': 5,
+                    'max': 480,
+                    'unit': 'minutes'
+                },
+                {
+                    'key': 'admin_session_timeout_minutes',
+                    'name': 'Admin Session Timeout',
+                    'default': '30',
+                    'type': 'number',
+                    'description': 'Session timeout for admin users',
+                    'min': 5,
+                    'max': 480,
+                    'unit': 'minutes'
+                }
+            ]
         },
-        {
-            'key': 'reservation_timeout_hours',
-            'value': '24',
-            'setting_type': 'number',
-            'description': 'Hours before a reservation expires'
-        },
-    ]
+        'reservations': {
+            'name': 'Reservations',
+            'icon': 'fas fa-calendar-check',
+            'description': 'Settings for book reservations and holds',
+            'settings': [
+                {
+                    'key': 'reservation_timeout_hours',
+                    'name': 'Reservation Expiry',
+                    'default': '24',
+                    'type': 'number',
+                    'description': 'Hours before confirmed reservations automatically expire',
+                    'min': 1,
+                    'max': 168,
+                    'unit': 'hours'
+                }
+            ]
+        }
+    }
+    
+    # Create a dictionary of existing settings for easy lookup
+    existing_settings = {setting.key: setting for setting in settings}
+    
+    # Add current values to setting definitions
+    for category_key, category in setting_categories.items():
+        for setting_def in category['settings']:
+            if setting_def['key'] in existing_settings:
+                setting_def['current_value'] = existing_settings[setting_def['key']].value
+                setting_def['is_configured'] = True
+                setting_def['setting_object'] = existing_settings[setting_def['key']]
+            else:
+                setting_def['current_value'] = setting_def['default']
+                setting_def['is_configured'] = False
+                setting_def['setting_object'] = None
     
     context = {
+        'setting_categories': setting_categories,
         'settings': settings,
-        'default_settings': default_settings,
     }
     
     return render(request, 'admin_dashboard/system_settings.html', context)
@@ -356,10 +514,13 @@ def delete_setting(request, setting_id):
         # Log the action
         AuditLog.objects.create(
             user=request.user,
-            action='TIMEOUT_SETTINGS_UPDATE',
+            action='SETTING_UPDATE',
             details=f"Deleted system setting: {setting_key}",
             ip_address=get_client_ip(request)
         )
+        
+        # Invalidate cache for this setting
+        SystemSettingsHelper.invalidate_cache(setting_key)
         
         setting.delete()
         messages.success(request, f"Setting '{setting_key}' deleted successfully.")
