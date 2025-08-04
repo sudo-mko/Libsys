@@ -155,7 +155,8 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 
-NPM_BIN_PATH = "/usr/local/bin/npm"
+NPM_BIN_PATH = r"C:\Users\samee\AppData\Roaming\npm\npm.cmd"
+
 
 # Account Lock Settings
 ACCOUNT_LOCK_SETTINGS = {
@@ -176,7 +177,7 @@ SESSION_TIMEOUT_BY_ROLE = {
 # Password Policy Settings
 PASSWORD_POLICY = {
     'ADMIN_MANAGER_EXPIRY_DAYS': 180,  # 6 months
-    'FORCE_CHANGE_ON_FIRST_LOGIN': True,
+    'FORCE_CHANGE_ON_FIRST_LOGIN': False,
 }
 
 
