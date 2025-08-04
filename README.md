@@ -247,8 +247,8 @@ This Library Management System was developed by:
 
 - **Abdul Shameeu** - 23081531
 - **Shaif Abdul Raheem** - 24019751  
-- **Mohamed Wildhan Waheed** - 2302271
-- **Ahmed Moustafa** - 2400329
+- **Mohamed Wildhan Waheed** - 24019747
+- **Ahmed Moustafa** - 24033404
 
 ---
 
