@@ -1,0 +1,104 @@
+LIBRARY MANAGEMENT SYSTEM - SETUP INSTRUCTIONS
+
+===============================================
+PREREQUISITES
+===============================================
+
+Before running this project, ensure you have:
+- Python 3.8 or higher
+- Node.js and npm (for Tailwind CSS)
+- Git
+
+===============================================
+INSTALLATION & SETUP
+===============================================
+
+1. SET UP PYTHON VIRTUAL ENVIRONMENT
+
+   On Windows:
+   python -m venv venv
+   venv\Scripts\activate
+
+   On macOS/Linux:
+   python3 -m venv venv
+   source venv/bin/activate
+
+2. INSTALL PYTHON DEPENDENCIES
+   cd lms
+   pip install -r requirements.txt
+
+3. SET UP TAILWIND CSS
+   cd theme/static_src
+   npm install
+
+4. DATABASE SETUP
+   cd ..  (navigate back to main Django directory)
+   python manage.py makemigrations
+   python manage.py migrate
+   python manage.py createsuperuser
+
+5. LOAD INITIAL DATA 
+   python manage.py loaddata initial_data.json
+
+===============================================
+RUNNING THE PROJECT
+===============================================
+
+1. START TAILWIND CSS BUILD PROCESS
+   In one terminal (from root project directory):
+   python manage.py tailwind start
+
+2. START DJANGO DEVELOPMENT SERVER
+   In another terminal:
+   cd lms
+   python manage.py runserver
+
+3. ACCESS THE APPLICATION
+   - Main app: http://127.0.0.1:8000/
+   - Admin panel: http://127.0.0.1:8000/admin/
+
+===============================================
+TEST USER CREDENTIALS
+===============================================
+
+After loading initial data, use these test accounts:
+
+Username: admin         | Password: password | Role: admin
+Username: manager       | Password: password | Role: manager
+Username: librarian     | Password: password | Role: librarian
+Username: member        | Password: password | Role: member
+Username: john_doe      | Password: password | Role: member
+Username: sarah_student | Password: password | Role: member
+
+===============================================
+CONFIGURATION
+===============================================
+
+DATABASE CONFIGURATION:
+- Default: SQLite (development)
+- For production: Update DATABASES setting in config/settings.py
+
+STYLING CUSTOMIZATION:
+1. Edit files in lms/theme/static_src/src/
+2. Build process automatically updates CSS
+3. Templates located in lms/theme/templates/
+
+===============================================
+TROUBLESHOOTING
+===============================================
+
+Common Issues:
+- CSS not updating: Ensure Tailwind build process is running
+- Database errors: Run 'python manage.py migrate'
+- Permission denied: Check virtual environment activation
+- Node.js errors: Verify Node.js and npm installation
+
+===============================================
+TESTING
+===============================================
+
+Run test suite:
+python manage.py test
+
+Note: All test users use password 'password' for easy testing.
+Change credentials in production!

@@ -118,11 +118,10 @@ python manage.py createsuperuser
 
 ### 6. Load Initial Data (Optional)
 
-If you have fixture files or want to create some sample data:
 
 ```bash
 # Load initial data
-python manage.py loaddata library/fixtures/initial_data.json
+python manage.py loaddata initial_data.json
 ```
 
 ## 🏃‍♂️ Running the Project
@@ -181,16 +180,7 @@ Libsys/
 
 ## 🔧 Configuration
 
-### Environment Variables
 
-Create a `.env` file in the `lms/` directory for environment-specific settings:
-
-```env
-DEBUG=True
-SECRET_KEY=your-secret-key-here
-DATABASE_URL=sqlite:///db.sqlite3
-ALLOWED_HOSTS=localhost,127.0.0.1
-```
 
 ### Database Configuration
 
@@ -206,12 +196,7 @@ The project uses Tailwind CSS for styling. To customize the appearance:
 2. The build process will automatically update the CSS
 3. Templates are located in `lms/theme/templates/`
 
-### Adding New Features
 
-1. Create new Django apps using `python manage.py startapp <app_name>`
-2. Add the app to `INSTALLED_APPS` in settings
-3. Create models, views, and templates as needed
-4. Run migrations for any new models
 
 ## 🧪 Testing
 
@@ -220,6 +205,21 @@ Run the test suite:
 ```bash
 python manage.py test
 ```
+
+### Test User Credentials
+
+After loading the initial data (`python manage.py loaddata initial_data.json`), you can use these pre-configured test accounts:
+
+| Username      | Email                    | Password | Role      | Description                                    |
+|---------------|--------------------------|----------|-----------|------------------------------------------------|
+| admin         | admin@test.com           | password | admin     | Super admin with full system access           |
+| manager       | manager@test.com         | password | manager   | Library manager - user management & reports   |
+| librarian     | librarian@test.com       | password | librarian | Librarian - book management & borrowing       |
+| member        | member@test.com          | password | member    | Basic member with Basic membership            |
+| john_doe      | john.doe@test.com        | password | member    | Premium member (John Doe)                     |
+| sarah_student | sarah.student@test.com   | password | member    | Student member (Sarah Student)                |
+
+**Note:** All test users use the password `password` for easy testing. Remember to change these credentials in production!
 
 ## 📊 User Roles
 
@@ -230,17 +230,7 @@ The system supports different user roles with varying permissions:
 - **Manager**: Can manage users and generate reports
 - **Admin**: Full system access
 
-## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is open source and available under the [MIT License](LICENSE).
 
 ## 🆘 Troubleshooting
 
@@ -251,18 +241,21 @@ This project is open source and available under the [MIT License](LICENSE).
 3. **Permission denied**: Make sure you're in the virtual environment and have proper permissions
 4. **Node.js errors**: Ensure Node.js and npm are properly installed
 
-### Getting Help
+## 👥 Made By
 
-- Check the Django documentation: https://docs.djangoproject.com/
-- Tailwind CSS documentation: https://tailwindcss.com/docs
-- Open an issue on GitHub for bug reports or feature requests
+This Library Management System was developed by:
 
-## 📞 Support
-
-For support, please open an issue on GitHub or contact the development team.
+- **Abdul Shameeu** - 23081531
+- **Shaif Abdul Raheem** - 24019751  
+- **Mohamed Wildhan Waheed** - 2302271
+- **Ahmed Moustafa** - 2400329
 
 ---
 
-**Happy Library Managing! 📚**
+
+
+
+
+
 
 

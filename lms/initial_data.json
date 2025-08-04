@@ -1,0 +1,1125 @@
+[
+  { "model": "library.author", "pk": 1, "fields": { "name": "Isaac Asimov" } },
+  {
+    "model": "library.author",
+    "pk": 2,
+    "fields": { "name": "Agatha Christie" }
+  },
+  { "model": "library.author", "pk": 3, "fields": { "name": "J.K. Rowling" } },
+  {
+    "model": "library.category",
+    "pk": 1,
+    "fields": { "category_name": "Science Fiction" }
+  },
+  {
+    "model": "library.category",
+    "pk": 2,
+    "fields": { "category_name": "Mystery" }
+  },
+  {
+    "model": "library.category",
+    "pk": 3,
+    "fields": { "category_name": "Fantasy" }
+  },
+  {
+    "model": "branches.branch",
+    "pk": 1,
+    "fields": { "branch_name": "Central Library", "location": "Downtown" }
+  },
+  {
+    "model": "branches.branch",
+    "pk": 2,
+    "fields": { "branch_name": "West End Branch", "location": "West City" }
+  },
+  {
+    "model": "branches.branch",
+    "pk": 3,
+    "fields": { "branch_name": "East Side Branch", "location": "East City" }
+  },
+  {
+    "model": "library.book",
+    "pk": 1,
+    "fields": {
+      "title": "The Foundation",
+      "author": 1,
+      "category": 1,
+      "isbn": "9781234567890",
+      "publication_date": "1951-06-01",
+      "branch": 1,
+      "edition": 1,
+      "description": "A classic science fiction novel.",
+      "cover": "book_covers/Beige And Black Simple Science Fiction Book Cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 2,
+    "fields": {
+      "title": "Murder on the Orient Express",
+      "author": 2,
+      "category": 2,
+      "isbn": "9781234567891",
+      "publication_date": "1934-01-01",
+      "branch": 2,
+      "edition": 1,
+      "description": "A masterpiece of mystery fiction.",
+      "cover": "book_covers/Black and Blue Dystopian Sci-Fi Novel Book Cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 3,
+    "fields": {
+      "title": "Harry Potter and the Sorcerer's Stone",
+      "author": 3,
+      "category": 3,
+      "isbn": "9781234567892",
+      "publication_date": "1997-06-26",
+      "branch": 3,
+      "edition": 1,
+      "description": "A magical fantasy adventure.",
+      "cover": "book_covers/Brown and White Thriller Book Cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 4,
+    "fields": {
+      "title": "Galaxy Outlaws",
+      "author": 1,
+      "category": 1,
+      "isbn": "9781234567893",
+      "publication_date": "1960-08-15",
+      "branch": 1,
+      "edition": 2,
+      "description": "Intergalactic adventures await.",
+      "cover": "book_covers/Dark Blue and White Bold and Minimalist Outer Space Teen Fiction Wattpad Book Cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 5,
+    "fields": {
+      "title": "The Double Exposure",
+      "author": 2,
+      "category": 2,
+      "isbn": "9781234567894",
+      "publication_date": "1945-03-10",
+      "branch": 2,
+      "edition": 1,
+      "description": "A thrilling mystery.",
+      "cover": "book_covers/Double exposure artistic background novel book cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 6,
+    "fields": {
+      "title": "Neon Skies",
+      "author": 1,
+      "category": 1,
+      "isbn": "9781234567895",
+      "publication_date": "1972-11-04",
+      "branch": 1,
+      "edition": 1,
+      "description": "Futuristic science fiction.",
+      "cover": "book_covers/Pink Neon Science Fiction Book Cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 7,
+    "fields": {
+      "title": "Path of Shadows",
+      "author": 3,
+      "category": 3,
+      "isbn": "9781234567896",
+      "publication_date": "2001-09-15",
+      "branch": 3,
+      "edition": 1,
+      "description": "A journey through darkness.",
+      "cover": "book_covers/Purple and  Dark Blue The Path Of Shadows eBook Cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 8,
+    "fields": {
+      "title": "Haunted Manor",
+      "author": 2,
+      "category": 2,
+      "isbn": "9781234567897",
+      "publication_date": "1980-10-31",
+      "branch": 2,
+      "edition": 1,
+      "description": "A horror mystery.",
+      "cover": "book_covers/Red Black Illustrated Haunted Manor Horror Novel Book Cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 9,
+    "fields": {
+      "title": "Red Modern",
+      "author": 1,
+      "category": 1,
+      "isbn": "9781234567898",
+      "publication_date": "1965-07-20",
+      "branch": 1,
+      "edition": 1,
+      "description": "Modern science fiction.",
+      "cover": "book_covers/Red Modern Science Fiction Book Cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 10,
+    "fields": {
+      "title": "Double Exposure Mystery",
+      "author": 2,
+      "category": 2,
+      "isbn": "9781234567899",
+      "publication_date": "1955-04-18",
+      "branch": 2,
+      "edition": 1,
+      "description": "A mysterious thriller.",
+      "cover": "book_covers/Red and Blue Green Double Exposure Mystery Novel Book Cover .png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 11,
+    "fields": {
+      "title": "Forest Ebook",
+      "author": 3,
+      "category": 3,
+      "isbn": "9781234567800",
+      "publication_date": "2005-02-10",
+      "branch": 3,
+      "edition": 1,
+      "description": "A tale in the woods.",
+      "cover": "book_covers/White Green Minimalist Simple Photo Forest Ebook Cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 12,
+    "fields": {
+      "title": "Yellow Fantasy",
+      "author": 3,
+      "category": 3,
+      "isbn": "9781234567801",
+      "publication_date": "2010-12-24",
+      "branch": 3,
+      "edition": 1,
+      "description": "A fantasy adventure.",
+      "cover": "book_covers/Yellow Fantasy Novel Book Cover.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 13,
+    "fields": {
+      "title": "Conquest of Flames",
+      "author": 1,
+      "category": 1,
+      "isbn": "9781234567802",
+      "publication_date": "1988-07-11",
+      "branch": 1,
+      "edition": 1,
+      "description": "Epic battles and fire.",
+      "cover": "book_covers/conquest of flames.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 14,
+    "fields": {
+      "title": "Just the Two of Us",
+      "author": 2,
+      "category": 2,
+      "isbn": "9781234567803",
+      "publication_date": "1992-03-05",
+      "branch": 2,
+      "edition": 1,
+      "description": "A heartfelt mystery.",
+      "cover": "book_covers/just the two of us.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 15,
+    "fields": {
+      "title": "The Lost Kingdom",
+      "author": 3,
+      "category": 3,
+      "isbn": "9781234567804",
+      "publication_date": "2015-05-22",
+      "branch": 3,
+      "edition": 1,
+      "description": "Lost lands and magic.",
+      "cover": "book_covers/the lost kingdom.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 16,
+    "fields": {
+      "title": "The Story of the Boy",
+      "author": 2,
+      "category": 2,
+      "isbn": "9781234567805",
+      "publication_date": "2007-08-19",
+      "branch": 2,
+      "edition": 1,
+      "description": "A coming-of-age tale.",
+      "cover": "book_covers/the story of the boy.png"
+    }
+  },
+  {
+    "model": "library.book",
+    "pk": 17,
+    "fields": {
+      "title": "The Dancer",
+      "author": 3,
+      "category": 3,
+      "isbn": "9781234567806",
+      "publication_date": "2018-04-29",
+      "branch": 3,
+      "edition": 1,
+      "description": "A dance through life.",
+      "cover": "book_covers/thedancer.png"
+    }
+  },
+  {
+    "model": "users.membershiptype",
+    "pk": 1,
+    "fields": {
+      "name": "Basic Member",
+      "monthly_fee": "50.00",
+      "annual_fee": "500.00",
+      "max_books": 3,
+      "loan_period_days": 14,
+      "extension_days": 0
+    }
+  },
+  {
+    "model": "users.membershiptype",
+    "pk": 2,
+    "fields": {
+      "name": "Premium Member",
+      "monthly_fee": "75.00",
+      "annual_fee": "750.00",
+      "max_books": 5,
+      "loan_period_days": 14,
+      "extension_days": 7
+    }
+  },
+  {
+    "model": "users.membershiptype",
+    "pk": 3,
+    "fields": {
+      "name": "Student Member",
+      "monthly_fee": "30.00",
+      "annual_fee": "300.00",
+      "max_books": 4,
+      "loan_period_days": 21,
+      "extension_days": 0
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+      "username": "manager",
+      "email": "manager@test.com",
+      "first_name": "Lib",
+      "last_name": "Manager",
+      "role": "manager",
+      "password": "pbkdf2_sha256$1000000$Y46RrEdLCBzNLAyv6f4Bjy$fgcze0DBt5Zu3FhOKP9B8VnqKRisnEK7MkEYA8SZbmU=",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false,
+      "phone_number": "1111111111",
+      "membership": null,
+      "created_at": "2024-08-03T06:00:00Z"
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 2,
+    "fields": {
+      "username": "librarian",
+      "email": "librarian@test.com",
+      "first_name": "Lib",
+      "last_name": "Rarian",
+      "role": "librarian",
+      "password": "pbkdf2_sha256$1000000$Y46RrEdLCBzNLAyv6f4Bjy$fgcze0DBt5Zu3FhOKP9B8VnqKRisnEK7MkEYA8SZbmU=",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false,
+      "phone_number": "2222222222",
+      "membership": null,
+      "created_at": "2024-08-03T06:00:00Z"
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 3,
+    "fields": {
+      "username": "member",
+      "email": "member@test.com",
+      "first_name": "Lib",
+      "last_name": "Member",
+      "role": "member",
+      "password": "pbkdf2_sha256$1000000$Y46RrEdLCBzNLAyv6f4Bjy$fgcze0DBt5Zu3FhOKP9B8VnqKRisnEK7MkEYA8SZbmU=",
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "phone_number": "3333333333",
+      "membership": 1,
+      "created_at": "2024-08-03T06:00:00Z"
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 4,
+    "fields": {
+      "username": "admin",
+      "email": "admin@test.com",
+      "first_name": "Lib",
+      "last_name": "Admin",
+      "role": "admin",
+      "password": "pbkdf2_sha256$1000000$Y46RrEdLCBzNLAyv6f4Bjy$fgcze0DBt5Zu3FhOKP9B8VnqKRisnEK7MkEYA8SZbmU=",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": true,
+      "phone_number": "4444444444",
+      "membership": null,
+      "created_at": "2024-08-03T06:00:00Z"
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 5,
+    "fields": {
+      "username": "john_doe",
+      "email": "john.doe@test.com",
+      "first_name": "John",
+      "last_name": "Doe",
+      "role": "member",
+      "password": "pbkdf2_sha256$1000000$Y46RrEdLCBzNLAyv6f4Bjy$fgcze0DBt5Zu3FhOKP9B8VnqKRisnEK7MkEYA8SZbmU=",
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "phone_number": "5555555555",
+      "membership": 2,
+      "created_at": "2024-09-15T08:30:00Z"
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 6,
+    "fields": {
+      "username": "sarah_student",
+      "email": "sarah.student@test.com",
+      "first_name": "Sarah",
+      "last_name": "Student",
+      "role": "member",
+      "password": "pbkdf2_sha256$1000000$Y46RrEdLCBzNLAyv6f4Bjy$fgcze0DBt5Zu3FhOKP9B8VnqKRisnEK7MkEYA8SZbmU=",
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "phone_number": "6666666666",
+      "membership": 3,
+      "created_at": "2024-10-01T14:20:00Z"
+    }
+  },
+  {
+    "model": "borrow.borrowing",
+    "pk": 1,
+    "fields": {
+      "user": 3,
+      "book": 1,
+      "borrow_date": "2024-12-01",
+      "due_date": "2024-12-15",
+      "return_date": "2024-12-14",
+      "is_extended": false,
+      "status": "returned",
+      "pickup_code": "ABC1234567",
+      "approved_date": "2024-12-01T10:00:00Z",
+      "pickup_date": "2024-12-01T15:30:00Z",
+      "rejected_date": null,
+      "rejected_by": null,
+      "rejection_reason": null
+    }
+  },
+  {
+    "model": "borrow.borrowing",
+    "pk": 2,
+    "fields": {
+      "user": 5,
+      "book": 3,
+      "borrow_date": "2024-12-05",
+      "due_date": "2024-12-19",
+      "return_date": null,
+      "is_extended": false,
+      "status": "borrowed",
+      "pickup_code": "XYZ9876543",
+      "approved_date": "2024-12-05T09:15:00Z",
+      "pickup_date": "2024-12-05T11:45:00Z",
+      "rejected_date": null,
+      "rejected_by": null,
+      "rejection_reason": null
+    }
+  },
+  {
+    "model": "borrow.borrowing",
+    "pk": 3,
+    "fields": {
+      "user": 6,
+      "book": 7,
+      "borrow_date": "2024-11-20",
+      "due_date": "2024-12-11",
+      "return_date": null,
+      "is_extended": true,
+      "status": "overdue",
+      "pickup_code": "DEF5555555",
+      "approved_date": "2024-11-20T14:20:00Z",
+      "pickup_date": "2024-11-20T16:00:00Z",
+      "rejected_date": null,
+      "rejected_by": null,
+      "rejection_reason": null
+    }
+  },
+  {
+    "model": "borrow.borrowing",
+    "pk": 4,
+    "fields": {
+      "user": 3,
+      "book": 9,
+      "borrow_date": "2024-12-10",
+      "due_date": "2024-12-24",
+      "return_date": null,
+      "is_extended": false,
+      "status": "borrowed",
+      "pickup_code": "GHI1111111",
+      "approved_date": "2024-12-10T13:00:00Z",
+      "pickup_date": "2024-12-10T14:30:00Z",
+      "rejected_date": null,
+      "rejected_by": null,
+      "rejection_reason": null
+    }
+  },
+  {
+    "model": "borrow.borrowing",
+    "pk": 5,
+    "fields": {
+      "user": 5,
+      "book": 12,
+      "borrow_date": "2024-12-12",
+      "due_date": "2024-12-19",
+      "return_date": null,
+      "is_extended": false,
+      "status": "pending",
+      "pickup_code": null,
+      "approved_date": null,
+      "pickup_date": null,
+      "rejected_date": null,
+      "rejected_by": null,
+      "rejection_reason": null
+    }
+  },
+  {
+    "model": "borrow.borrowing",
+    "pk": 6,
+    "fields": {
+      "user": 6,
+      "book": 15,
+      "borrow_date": "2024-12-08",
+      "due_date": "2024-12-15",
+      "return_date": null,
+      "is_extended": false,
+      "status": "approved",
+      "pickup_code": "JKL7777777",
+      "approved_date": "2024-12-08T16:45:00Z",
+      "pickup_date": null,
+      "rejected_date": null,
+      "rejected_by": null,
+      "rejection_reason": null
+    }
+  },
+  {
+    "model": "borrow.borrowing",
+    "pk": 7,
+    "fields": {
+      "user": 3,
+      "book": 5,
+      "borrow_date": "2024-12-13",
+      "due_date": "2024-12-20",
+      "return_date": null,
+      "is_extended": false,
+      "status": "rejected",
+      "pickup_code": null,
+      "approved_date": null,
+      "pickup_date": null,
+      "rejected_date": "2024-12-13T12:00:00Z",
+      "rejected_by": 2,
+      "rejection_reason": "User has reached maximum borrowing limit"
+    }
+  },
+  {
+    "model": "borrow.borrowing",
+    "pk": 8,
+    "fields": {
+      "user": 5,
+      "book": 2,
+      "borrow_date": "2024-11-15",
+      "due_date": "2024-11-29",
+      "return_date": "2024-12-05",
+      "is_extended": true,
+      "status": "returned",
+      "pickup_code": "MNO2222222",
+      "approved_date": "2024-11-15T11:30:00Z",
+      "pickup_date": "2024-11-15T13:15:00Z",
+      "rejected_date": null,
+      "rejected_by": null,
+      "rejection_reason": null
+    }
+  },
+  {
+    "model": "borrow.borrowing",
+    "pk": 9,
+    "fields": {
+      "user": 6,
+      "book": 8,
+      "borrow_date": "2024-11-28",
+      "due_date": "2024-12-19",
+      "return_date": null,
+      "is_extended": false,
+      "status": "overdue",
+      "pickup_code": "PQR8888888",
+      "approved_date": "2024-11-28T10:15:00Z",
+      "pickup_date": "2024-11-28T12:00:00Z",
+      "rejected_date": null,
+      "rejected_by": null,
+      "rejection_reason": null
+    }
+  },
+  {
+    "model": "borrow.borrowing",
+    "pk": 10,
+    "fields": {
+      "user": 3,
+      "book": 11,
+      "borrow_date": "2024-12-01",
+      "due_date": "2024-12-08",
+      "return_date": null,
+      "is_extended": false,
+      "status": "expired",
+      "pickup_code": "STU3333333",
+      "approved_date": "2024-12-01T08:00:00Z",
+      "pickup_date": null,
+      "rejected_date": null,
+      "rejected_by": null,
+      "rejection_reason": null
+    }
+  },
+  {
+    "model": "borrow.extensionrequest",
+    "pk": 1,
+    "fields": {
+      "borrowing": 3,
+      "request_date": "2024-12-10T10:30:00Z",
+      "status": "approved",
+      "approved_by": 2,
+      "approval_date": "2024-12-10T14:00:00Z",
+      "rejection_reason": null
+    }
+  },
+  {
+    "model": "borrow.extensionrequest",
+    "pk": 2,
+    "fields": {
+      "borrowing": 8,
+      "request_date": "2024-11-28T09:15:00Z",
+      "status": "approved",
+      "approved_by": 1,
+      "approval_date": "2024-11-28T11:30:00Z",
+      "rejection_reason": null
+    }
+  },
+  {
+    "model": "borrow.extensionrequest",
+    "pk": 3,
+    "fields": {
+      "borrowing": 2,
+      "request_date": "2024-12-18T16:20:00Z",
+      "status": "pending",
+      "approved_by": null,
+      "approval_date": null,
+      "rejection_reason": null
+    }
+  },
+  {
+    "model": "borrow.extensionrequest",
+    "pk": 4,
+    "fields": {
+      "borrowing": 4,
+      "request_date": "2024-12-22T11:45:00Z",
+      "status": "rejected",
+      "approved_by": 2,
+      "approval_date": null,
+      "rejection_reason": "Book is reserved by another user"
+    }
+  },
+  {
+    "model": "fines.fine",
+    "pk": 1,
+    "fields": {
+      "borrowing": 3,
+      "amount": "16.00",
+      "days_overdue": 8,
+      "paid": false,
+      "paid_at": null,
+      "fine_type": "overdue",
+      "created_at": "2024-12-12T08:00:00Z"
+    }
+  },
+  {
+    "model": "fines.fine",
+    "pk": 2,
+    "fields": {
+      "borrowing": 8,
+      "amount": "12.00",
+      "days_overdue": 6,
+      "paid": true,
+      "paid_at": "2024-12-05T10:30:00Z",
+      "fine_type": "overdue",
+      "created_at": "2024-11-30T14:20:00Z"
+    }
+  },
+  {
+    "model": "fines.fine",
+    "pk": 3,
+    "fields": {
+      "borrowing": 9,
+      "amount": "4.00",
+      "days_overdue": 2,
+      "paid": false,
+      "paid_at": null,
+      "fine_type": "overdue",
+      "created_at": "2024-12-21T09:15:00Z"
+    }
+  },
+  {
+    "model": "fines.fine",
+    "pk": 4,
+    "fields": {
+      "borrowing": 1,
+      "amount": "150.00",
+      "days_overdue": 0,
+      "paid": true,
+      "paid_at": "2024-12-20T15:45:00Z",
+      "fine_type": "damaged",
+      "created_at": "2024-12-15T11:00:00Z"
+    }
+  },
+  {
+    "model": "reservations.reservation",
+    "pk": 1,
+    "fields": {
+      "user": 6,
+      "book": 1,
+      "status": "pending",
+      "type": "regular",
+      "created_at": "2024-12-15T10:30:00Z",
+      "updated_at": "2024-12-15T10:30:00Z"
+    }
+  },
+  {
+    "model": "reservations.reservation",
+    "pk": 2,
+    "fields": {
+      "user": 3,
+      "book": 3,
+      "status": "confirmed",
+      "type": "priority",
+      "created_at": "2024-12-18T14:20:00Z",
+      "updated_at": "2024-12-19T09:15:00Z"
+    }
+  },
+  {
+    "model": "reservations.reservation",
+    "pk": 3,
+    "fields": {
+      "user": 5,
+      "book": 7,
+      "status": "pending",
+      "type": "regular",
+      "created_at": "2024-12-12T16:45:00Z",
+      "updated_at": "2024-12-12T16:45:00Z"
+    }
+  },
+  {
+    "model": "reservations.reservation",
+    "pk": 4,
+    "fields": {
+      "user": 6,
+      "book": 9,
+      "status": "expired",
+      "type": "regular",
+      "created_at": "2024-11-25T11:00:00Z",
+      "updated_at": "2024-12-02T08:00:00Z"
+    }
+  },
+  {
+    "model": "reservations.reservation",
+    "pk": 5,
+    "fields": {
+      "user": 3,
+      "book": 2,
+      "status": "rejected",
+      "type": "regular",
+      "created_at": "2024-12-10T13:30:00Z",
+      "updated_at": "2024-12-11T10:15:00Z"
+    }
+  },
+  {
+    "model": "admin_dashboard.systemsetting",
+    "pk": 1,
+    "fields": {
+      "key": "session_timeout",
+      "value": "30",
+      "setting_type": "number",
+      "description": "Session timeout in minutes",
+      "created_at": "2024-08-03T06:00:00Z",
+      "updated_at": "2024-12-01T10:00:00Z",
+      "updated_by": 1
+    }
+  },
+  {
+    "model": "admin_dashboard.systemsetting",
+    "pk": 2,
+    "fields": {
+      "key": "max_borrowing_limit",
+      "value": "5",
+      "setting_type": "number",
+      "description": "Maximum books a user can borrow simultaneously",
+      "created_at": "2024-08-03T06:00:00Z",
+      "updated_at": "2024-11-15T14:30:00Z",
+      "updated_by": 1
+    }
+  },
+  {
+    "model": "admin_dashboard.systemsetting",
+    "pk": 3,
+    "fields": {
+      "key": "overdue_fine_rate_tier1",
+      "value": "2.00",
+      "setting_type": "number",
+      "description": "Fine rate for 1-3 days overdue (MVR per day)",
+      "created_at": "2024-08-03T06:00:00Z",
+      "updated_at": "2024-10-20T09:45:00Z",
+      "updated_by": 1
+    }
+  },
+  {
+    "model": "admin_dashboard.systemsetting",
+    "pk": 4,
+    "fields": {
+      "key": "overdue_fine_rate_tier2",
+      "value": "5.00",
+      "setting_type": "number",
+      "description": "Fine rate for 4-7 days overdue (MVR per day)",
+      "created_at": "2024-08-03T06:00:00Z",
+      "updated_at": "2024-10-20T09:45:00Z",
+      "updated_by": 1
+    }
+  },
+  {
+    "model": "admin_dashboard.systemsetting",
+    "pk": 5,
+    "fields": {
+      "key": "overdue_fine_rate_tier3",
+      "value": "10.00",
+      "setting_type": "number",
+      "description": "Fine rate for 8+ days overdue (MVR per day)",
+      "created_at": "2024-08-03T06:00:00Z",
+      "updated_at": "2024-10-20T09:45:00Z",
+      "updated_by": 1
+    }
+  },
+  {
+    "model": "admin_dashboard.systemsetting",
+    "pk": 6,
+    "fields": {
+      "key": "reservation_expiry_hours",
+      "value": "72",
+      "setting_type": "number",
+      "description": "Hours before a reservation expires",
+      "created_at": "2024-08-03T06:00:00Z",
+      "updated_at": "2024-09-10T11:20:00Z",
+      "updated_by": 2
+    }
+  },
+  {
+    "model": "admin_dashboard.systemsetting",
+    "pk": 7,
+    "fields": {
+      "key": "pickup_code_expiry_days",
+      "value": "3",
+      "setting_type": "number",
+      "description": "Days before pickup code expires",
+      "created_at": "2024-08-03T06:00:00Z",
+      "updated_at": "2024-08-03T06:00:00Z",
+      "updated_by": 1
+    }
+  },
+  {
+    "model": "admin_dashboard.systemsetting",
+    "pk": 8,
+    "fields": {
+      "key": "maintenance_mode",
+      "value": "false",
+      "setting_type": "boolean",
+      "description": "Enable maintenance mode",
+      "created_at": "2024-08-03T06:00:00Z",
+      "updated_at": "2024-12-01T08:00:00Z",
+      "updated_by": 4
+    }
+  },
+  {
+    "model": "admin_dashboard.systemsetting",
+    "pk": 9,
+    "fields": {
+      "key": "email_notifications",
+      "value": "{\"overdue_reminders\": true, \"reservation_confirmations\": true, \"fine_notifications\": true}",
+      "setting_type": "json",
+      "description": "Email notification settings",
+      "created_at": "2024-08-03T06:00:00Z",
+      "updated_at": "2024-11-05T16:30:00Z",
+      "updated_by": 1
+    }
+  },
+  {
+    "model": "admin_dashboard.auditlog",
+    "pk": 1,
+    "fields": {
+      "user": 3,
+      "action": "LOGIN_SUCCESS",
+      "timestamp": "2024-12-01T08:30:00Z",
+      "ip_address": "192.168.1.100",
+      "details": "User logged in successfully"
+    }
+  },
+  {
+    "model": "admin_dashboard.auditlog",
+    "pk": 2,
+    "fields": {
+      "user": 3,
+      "action": "BOOK_BORROW",
+      "timestamp": "2024-12-01T10:00:00Z",
+      "ip_address": "192.168.1.100",
+      "details": "Borrowed book: The Foundation (ID: 1)"
+    }
+  },
+  {
+    "model": "admin_dashboard.auditlog",
+    "pk": 3,
+    "fields": {
+      "user": 2,
+      "action": "BORROWING_APPROVE",
+      "timestamp": "2024-12-01T10:00:00Z",
+      "ip_address": "192.168.1.50",
+      "details": "Approved borrowing request for user: member, book: The Foundation"
+    }
+  },
+  {
+    "model": "admin_dashboard.auditlog",
+    "pk": 4,
+    "fields": {
+      "user": 5,
+      "action": "LOGIN_SUCCESS",
+      "timestamp": "2024-12-05T09:00:00Z",
+      "ip_address": "192.168.1.105",
+      "details": "User logged in successfully"
+    }
+  },
+  {
+    "model": "admin_dashboard.auditlog",
+    "pk": 5,
+    "fields": {
+      "user": 5,
+      "action": "BOOK_BORROW",
+      "timestamp": "2024-12-05T09:15:00Z",
+      "ip_address": "192.168.1.105",
+      "details": "Borrowed book: Harry Potter and the Sorcerer's Stone (ID: 3)"
+    }
+  },
+  {
+    "model": "admin_dashboard.auditlog",
+    "pk": 6,
+    "fields": {
+      "user": 6,
+      "action": "LOGIN_FAILED",
+      "timestamp": "2024-12-08T14:20:00Z",
+      "ip_address": "192.168.1.110",
+      "details": "Failed login attempt - incorrect password"
+    }
+  },
+  {
+    "model": "admin_dashboard.auditlog",
+    "pk": 7,
+    "fields": {
+      "user": 6,
+      "action": "LOGIN_SUCCESS",
+      "timestamp": "2024-12-08T14:25:00Z",
+      "ip_address": "192.168.1.110",
+      "details": "User logged in successfully"
+    }
+  },
+  {
+    "model": "admin_dashboard.auditlog",
+    "pk": 8,
+    "fields": {
+      "user": 6,
+      "action": "EXTENSION_REQUEST",
+      "timestamp": "2024-12-10T10:30:00Z",
+      "ip_address": "192.168.1.110",
+      "details": "Requested extension for book: Path of Shadows (ID: 7)"
+    }
+  },
+  {
+    "model": "admin_dashboard.auditlog",
+    "pk": 9,
+    "fields": {
+      "user": 2,
+      "action": "EXTENSION_APPROVE",
+      "timestamp": "2024-12-10T14:00:00Z",
+      "ip_address": "192.168.1.50",
+      "details": "Approved extension request for user: sarah_student, book: Path of Shadows"
+    }
+  },
+  {
+    "model": "admin_dashboard.auditlog",
+    "pk": 10,
+    "fields": {
+      "user": 1,
+      "action": "FINE_CREATE",
+      "timestamp": "2024-12-12T08:00:00Z",
+      "ip_address": "192.168.1.25",
+      "details": "Fine created: 16.00 MVR for overdue book. Days overdue: 8"
+    }
+  },
+  {
+    "model": "admin_dashboard.auditlog",
+    "pk": 11,
+    "fields": {
+      "user": 5,
+      "action": "FINE_PAID",
+      "timestamp": "2024-12-05T10:30:00Z",
+      "ip_address": "192.168.1.105",
+      "details": "Fine paid: 12.00 MVR for overdue book"
+    }
+  },
+  {
+    "model": "admin_dashboard.auditlog",
+    "pk": 12,
+    "fields": {
+      "user": 6,
+      "action": "RESERVATION_CREATE",
+      "timestamp": "2024-12-15T10:30:00Z",
+      "ip_address": "192.168.1.110",
+      "details": "Reserved book: The Foundation (ID: 1)"
+    }
+  },
+  {
+    "model": "admin_dashboard.auditlog",
+    "pk": 13,
+    "fields": {
+      "user": 3,
+      "action": "BOOK_RETURN",
+      "timestamp": "2024-12-14T16:00:00Z",
+      "ip_address": "192.168.1.100",
+      "details": "Returned book: The Foundation (ID: 1)"
+    }
+  },
+  {
+    "model": "admin_dashboard.auditlog",
+    "pk": 14,
+    "fields": {
+      "user": 2,
+      "action": "BORROWING_REJECT",
+      "timestamp": "2024-12-13T12:00:00Z",
+      "ip_address": "192.168.1.50",
+      "details": "Rejected borrowing request for user: member, book: The Double Exposure. Reason: User has reached maximum borrowing limit"
+    }
+  },
+  {
+    "model": "admin_dashboard.auditlog",
+    "pk": 15,
+    "fields": {
+      "user": 1,
+      "action": "SETTING_UPDATE",
+      "timestamp": "2024-12-01T10:00:00Z",
+      "ip_address": "192.168.1.25",
+      "details": "Updated system setting: session_timeout = 30"
+    }
+  },
+  {
+    "model": "admin_dashboard.auditlog",
+    "pk": 16,
+    "fields": {
+      "user": 4,
+      "action": "ADMIN_DASHBOARD_ACCESS",
+      "timestamp": "2024-12-20T09:15:00Z",
+      "ip_address": "192.168.1.10",
+      "details": "Accessed admin dashboard"
+    }
+  },
+  {
+    "model": "admin_dashboard.auditlog",
+    "pk": 17,
+    "fields": {
+      "user": 3,
+      "action": "FINE_PAID",
+      "timestamp": "2024-12-20T15:45:00Z",
+      "ip_address": "192.168.1.100",
+      "details": "Fine paid: 150.00 MVR for damaged book"
+    }
+  },
+  {
+    "model": "admin_dashboard.auditlog",
+    "pk": 18,
+    "fields": {
+      "user": 5,
+      "action": "LOGOUT",
+      "timestamp": "2024-12-19T17:30:00Z",
+      "ip_address": "192.168.1.105",
+      "details": "User logged out"
+    }
+  },
+  {
+    "model": "admin_dashboard.auditlog",
+    "pk": 19,
+    "fields": {
+      "user": 2,
+      "action": "AUDIT_LOGS_ACCESS",
+      "timestamp": "2024-12-22T11:20:00Z",
+      "ip_address": "192.168.1.50",
+      "details": "Accessed audit logs for review"
+    }
+  },
+  {
+    "model": "admin_dashboard.auditlog",
+    "pk": 20,
+    "fields": {
+      "user": 1,
+      "action": "BULK_OPERATION",
+      "timestamp": "2024-12-18T14:45:00Z",
+      "ip_address": "192.168.1.25",
+      "details": "Performed bulk update on overdue fines - processed 15 records"
+    }
+  }
+]
