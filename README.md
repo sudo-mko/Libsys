@@ -51,7 +51,7 @@ Before running this project, make sure you have the following installed:
 
 ```bash
 git clone <your-repo-url>
-cd library-management-system
+cd Libsys
 ```
 
 ### 2. Set Up Python Virtual Environment
@@ -240,6 +240,7 @@ The system supports different user roles with varying permissions:
 2. **Database errors**: Run `python manage.py migrate` to ensure all migrations are applied
 3. **Permission denied**: Make sure you're in the virtual environment and have proper permissions
 4. **Node.js errors**: Ensure Node.js and npm are properly installed
+5. **Npm path error**: You may need to adjust the NPM path in settings depending on the operating system you have, the path is different for windows and mac/linux
 
 ## 👥 Made By
 
