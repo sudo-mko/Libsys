@@ -48,7 +48,7 @@
       "branch": 1,
       "edition": 1,
       "description": "A classic science fiction novel.",
-      "cover": "book_covers/Beige And Black Simple Science Fiction Book Cover.png"
+      "cover": "book_covers/Beige And Black Simple Science Fiction Book Cover.webp"
     }
   },
   {
@@ -63,7 +63,7 @@
       "branch": 2,
       "edition": 1,
       "description": "A masterpiece of mystery fiction.",
-      "cover": "book_covers/Black and Blue Dystopian Sci-Fi Novel Book Cover.png"
+      "cover": "book_covers/Black and Blue Dystopian Sci-Fi Novel Book Cover.webp"
     }
   },
   {
@@ -78,7 +78,7 @@
       "branch": 3,
       "edition": 1,
       "description": "A magical fantasy adventure.",
-      "cover": "book_covers/Brown and White Thriller Book Cover.png"
+      "cover": "book_covers/Brown and White Thriller Book Cover.webp"
     }
   },
   {
@@ -93,7 +93,7 @@
       "branch": 1,
       "edition": 2,
       "description": "Intergalactic adventures await.",
-      "cover": "book_covers/Dark Blue and White Bold and Minimalist Outer Space Teen Fiction Wattpad Book Cover.png"
+      "cover": "book_covers/Dark Blue and White Bold and Minimalist Outer Space Teen Fiction Wattpad Book Cover.webp"
     }
   },
   {
@@ -108,7 +108,7 @@
       "branch": 2,
       "edition": 1,
       "description": "A thrilling mystery.",
-      "cover": "book_covers/Double exposure artistic background novel book cover.png"
+      "cover": "book_covers/Double exposure artistic background novel book cover.webp"
     }
   },
   {
@@ -123,7 +123,7 @@
       "branch": 1,
       "edition": 1,
       "description": "Futuristic science fiction.",
-      "cover": "book_covers/Pink Neon Science Fiction Book Cover.png"
+      "cover": "book_covers/Pink Neon Science Fiction Book Cover.webp"
     }
   },
   {
@@ -138,7 +138,7 @@
       "branch": 3,
       "edition": 1,
       "description": "A journey through darkness.",
-      "cover": "book_covers/Purple and  Dark Blue The Path Of Shadows eBook Cover.png"
+      "cover": "book_covers/Purple and  Dark Blue The Path Of Shadows eBook Cover.webp"
     }
   },
   {
@@ -153,7 +153,7 @@
       "branch": 2,
       "edition": 1,
       "description": "A horror mystery.",
-      "cover": "book_covers/Red Black Illustrated Haunted Manor Horror Novel Book Cover.png"
+      "cover": "book_covers/Red Black Illustrated Haunted Manor Horror Novel Book Cover.webp"
     }
   },
   {
@@ -168,7 +168,7 @@
       "branch": 1,
       "edition": 1,
       "description": "Modern science fiction.",
-      "cover": "book_covers/Red Modern Science Fiction Book Cover.png"
+      "cover": "book_covers/Red Modern Science Fiction Book Cover.webp"
     }
   },
   {
@@ -183,7 +183,7 @@
       "branch": 2,
       "edition": 1,
       "description": "A mysterious thriller.",
-      "cover": "book_covers/Red and Blue Green Double Exposure Mystery Novel Book Cover .png"
+      "cover": "book_covers/Red and Blue Green Double Exposure Mystery Novel Book Cover .webp"
     }
   },
   {
@@ -198,7 +198,7 @@
       "branch": 3,
       "edition": 1,
       "description": "A tale in the woods.",
-      "cover": "book_covers/White Green Minimalist Simple Photo Forest Ebook Cover.png"
+      "cover": "book_covers/White Green Minimalist Simple Photo Forest Ebook Cover.webp"
     }
   },
   {
@@ -213,7 +213,7 @@
       "branch": 3,
       "edition": 1,
       "description": "A fantasy adventure.",
-      "cover": "book_covers/Yellow Fantasy Novel Book Cover.png"
+      "cover": "book_covers/Yellow Fantasy Novel Book Cover.webp"
     }
   },
   {
@@ -228,7 +228,7 @@
       "branch": 1,
       "edition": 1,
       "description": "Epic battles and fire.",
-      "cover": "book_covers/conquest of flames.png"
+      "cover": "book_covers/conquest of flames.webp"
     }
   },
   {
@@ -243,7 +243,7 @@
       "branch": 2,
       "edition": 1,
       "description": "A heartfelt mystery.",
-      "cover": "book_covers/just the two of us.png"
+      "cover": "book_covers/just the two of us.webp"
     }
   },
   {
@@ -258,7 +258,7 @@
       "branch": 3,
       "edition": 1,
       "description": "Lost lands and magic.",
-      "cover": "book_covers/the lost kingdom.png"
+      "cover": "book_covers/the lost kingdom.webp"
     }
   },
   {
@@ -273,7 +273,7 @@
       "branch": 2,
       "edition": 1,
       "description": "A coming-of-age tale.",
-      "cover": "book_covers/the story of the boy.png"
+      "cover": "book_covers/the story of the boy.webp"
     }
   },
   {
@@ -288,7 +288,7 @@
       "branch": 3,
       "edition": 1,
       "description": "A dance through life.",
-      "cover": "book_covers/thedancer.png"
+      "cover": "book_covers/thedancer.webp"
     }
   },
   {
