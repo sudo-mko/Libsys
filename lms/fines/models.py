@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from decimal import Decimal
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 class Fine(models.Model):
@@ -19,6 +20,17 @@ class Fine(models.Model):
 
     def __str__(self):
         return f"Fine for {str(self.borrowing)} - {self.get_fine_type_display()}: {self.amount} MVR"
+
+    def clean(self):
+        """Custom validation for Fine model"""
+        errors = {}
+        
+        # Validate negative amounts
+        if self.amount is not None and self.amount < 0:
+            errors['amount'] = 'Fine amount cannot be negative.'
+        
+        if errors:
+            raise ValidationError(errors)
 
     @staticmethod
     def calculate_overdue_fine(days_overdue):

@@ -47,10 +47,9 @@ INSTALLED_APPS = [
     'borrow',
     'reservations',
     'fines',
-    'admin_dashboard',
     'widget_tweaks',
     'django.contrib.humanize',
-    'privacy',
+    'admin_dashboard',
 ]
 
 TAILWIND_APP_NAME = 'theme'
@@ -63,8 +62,6 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'admin_dashboard.middleware.SessionTimeoutMiddleware',
-    'admin_dashboard.middleware.PasswordPolicyMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
@@ -148,15 +145,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.User'
 
+LOGIN_URL = '/users/login/'  # Add this line
+
 # Authentication backends
 AUTHENTICATION_BACKENDS = [
     'admin_dashboard.auth_backends.LibraryManagementAuditAuthBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-
-NPM_BIN_PATH = r"C:\Users\samee\AppData\Roaming\npm\npm.cmd"
-
+NPM_BIN_PATH = r"C:/Program Files/nodejs/npm.cmd"
 
 # Account Lock Settings
 ACCOUNT_LOCK_SETTINGS = {
@@ -179,5 +176,7 @@ PASSWORD_POLICY = {
     'ADMIN_MANAGER_EXPIRY_DAYS': 180,  # 6 months
     'FORCE_CHANGE_ON_FIRST_LOGIN': False,
 }
+
+
 
 

@@ -20,7 +20,8 @@ class UserModelTest(TestCase):
             monthly_fee=Decimal('10.00'),
             annual_fee=Decimal('100.00'),
             max_books=3,
-            loan_period_days=14
+            loan_period_days=14,
+            extension_days=7
         )
         
     def test_user_creation_valid_data(self):
@@ -187,7 +188,8 @@ class MembershipTypeModelTest(TestCase):
             monthly_fee=Decimal('25.50'),
             annual_fee=Decimal('250.00'),
             max_books=10,
-            loan_period_days=21
+            loan_period_days=21,
+            extension_days=7
         )
         
         self.assertEqual(membership.name, "Premium")
@@ -202,7 +204,8 @@ class MembershipTypeModelTest(TestCase):
                 monthly_fee=Decimal('-10.00'),  # Negative fee
                 annual_fee=Decimal('100.00'),
                 max_books=5,
-                loan_period_days=14
+                loan_period_days=14,
+                extension_days=7
             )
             membership.full_clean()
             
@@ -214,7 +217,8 @@ class MembershipTypeModelTest(TestCase):
                 monthly_fee=Decimal('10.00'),
                 annual_fee=Decimal('100.00'),
                 max_books=0,  # Zero books not allowed
-                loan_period_days=14
+                loan_period_days=14,
+                extension_days=7
             )
             membership.full_clean()
             
@@ -226,7 +230,8 @@ class MembershipTypeModelTest(TestCase):
             monthly_fee=Decimal('100.00'),
             annual_fee=Decimal('1000.00'),
             max_books=999999,  # Very high number
-            loan_period_days=365
+            loan_period_days=365,
+            extension_days=30
         )
         self.assertEqual(membership.max_books, 999999)
 
@@ -283,7 +288,8 @@ class UserFormsTest(TestCase):
             'monthly_fee': '15.00',
             'annual_fee': '150.00',
             'max_books': '5',
-            'loan_period_days': '21'
+            'loan_period_days': '21',
+            'extension_days': '7'
         }
         form = MembershipTypeForm(data=form_data)
         self.assertTrue(form.is_valid())
@@ -295,7 +301,8 @@ class UserFormsTest(TestCase):
             'monthly_fee': '-10.00',  # Negative
             'annual_fee': '150.00',
             'max_books': '5',
-            'loan_period_days': '21'
+            'loan_period_days': '21',
+            'extension_days': '7'
         }
         form = MembershipTypeForm(data=form_data)
         self.assertFalse(form.is_valid())
