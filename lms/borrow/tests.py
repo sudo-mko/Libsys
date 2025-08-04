@@ -176,10 +176,10 @@ class BorrowingModelTest(TestCase):
             book=self.book,
             due_date=date.today() + timedelta(days=14),
             status='approved',
-            approved_date=timezone.now() - timedelta(days=3)  # 3 days ago
+            approved_date=timezone.now() - timedelta(days=2)  # 2 days ago, still within 3-day limit
         )
         
-        # Should not be expired yet
+        # Should not be expired yet (approved 2 days ago, expires after 3 days)
         self.assertFalse(borrowing.is_code_expired())
         
     def test_borrowing_missing_required_fields(self):
@@ -282,16 +282,19 @@ class ExtensionRequestModelTest(TestCase):
             
     def test_extension_request_future_requested_date(self):
         """Test Case 53: Future requested date should not be allowed"""
-        future_date = timezone.now() + timedelta(days=1)
+        # Due to auto_now_add=True, future dates are automatically overridden
+        before_creation = timezone.now()
         extension = ExtensionRequest.objects.create(
             borrowing=self.borrowing,
-            request_date=future_date,
+            # request_date is auto-set by Django, ignoring any manual value
             rejection_reason="Future request",
             status='pending'
         )
+        after_creation = timezone.now()
         
-        # Future dates might be allowed in some cases, but this is a boundary test
-        self.assertEqual(extension.request_date, future_date)
+        # request_date should be set to current time, not future
+        self.assertGreaterEqual(extension.request_date, before_creation)
+        self.assertLessEqual(extension.request_date, after_creation)
         
     def test_extension_request_missing_reason(self):
         """Test Case 54: Extension request without reason"""

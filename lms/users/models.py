@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from datetime import timedelta
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 
@@ -13,6 +14,24 @@ class MembershipType(models.Model):
     max_books = models.PositiveIntegerField()
     loan_period_days = models.PositiveIntegerField()
     extension_days = models.PositiveIntegerField()
+
+    def clean(self):
+        """Custom validation for MembershipType model"""
+        errors = {}
+        
+        # Validate negative fees
+        if self.monthly_fee is not None and self.monthly_fee < 0:
+            errors['monthly_fee'] = 'Monthly fee cannot be negative.'
+        
+        if self.annual_fee is not None and self.annual_fee < 0:
+            errors['annual_fee'] = 'Annual fee cannot be negative.'
+        
+        # Validate zero max_books
+        if self.max_books is not None and self.max_books <= 0:
+            errors['max_books'] = 'Maximum books must be at least 1.'
+        
+        if errors:
+            raise ValidationError(errors)
 
     def __str__(self):
         return self.name

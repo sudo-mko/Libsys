@@ -147,7 +147,7 @@ AUTH_USER_MODEL = 'users.User'
 
 LOGIN_URL = '/users/login/' # Add this line
 
-NPM_BIN_PATH = "/usr/bin/npm"
+NPM_BIN_PATH = r"C:/Program Files/nodejs/npm.cmd"
 # Account Lock Settings
 ACCOUNT_LOCK_SETTINGS = {
     'MAX_FAILED_ATTEMPTS': 5,
