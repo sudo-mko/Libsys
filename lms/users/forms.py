@@ -7,6 +7,37 @@ from .models import User, MembershipType
 
 class UserRegistrationForm(UserCreationForm):
     email = forms.EmailField(required=True)
+    phone_number = forms.CharField(
+        max_length=20,
+        required=True,
+        validators=[
+            RegexValidator(
+                regex=r'^\+?1?\d{9,15}$',
+                message='Phone number must be entered in the format: +999999999. Up to 15 digits allowed.'
+            )
+        ],
+        help_text='Enter phone number in international format (e.g., +1234567890)'
+    )
+    first_name = forms.CharField(
+        max_length=30,
+        required=True,
+        validators=[
+            RegexValidator(
+                regex=r'^[a-zA-Z\s]+$',
+                message='First name can only contain letters and spaces.'
+            )
+        ]
+    )
+    last_name = forms.CharField(
+        max_length=30,
+        required=True,
+        validators=[
+            RegexValidator(
+                regex=r'^[a-zA-Z\s]+$',
+                message='Last name can only contain letters and spaces.'
+            )
+        ]
+    )
     
     class Meta:
         model = User
@@ -19,11 +50,11 @@ class UserRegistrationForm(UserCreationForm):
         
         self.fields['username'].widget.attrs.update({
             'class': field_styling,
-            'placeholder': 'Enter your username'
+            'placeholder': 'Enter your username (3-30 characters)'
         })
         self.fields['email'].widget.attrs.update({
             'class': field_styling,
-            'placeholder': 'Enter your email'
+            'placeholder': 'Enter your email address'
         })
         self.fields['first_name'].widget.attrs.update({
             'class': field_styling,
@@ -35,7 +66,7 @@ class UserRegistrationForm(UserCreationForm):
         })
         self.fields['phone_number'].widget.attrs.update({
             'class': field_styling,
-            'placeholder': 'Enter your phone number'
+            'placeholder': 'Enter phone number (e.g., +1234567890)'
         })
         self.fields['password1'].widget.attrs.update({
             'class': field_styling,
@@ -45,6 +76,111 @@ class UserRegistrationForm(UserCreationForm):
             'class': field_styling,
             'placeholder': '••••••••'
         })
+        
+        # Add help text for password requirements
+        self.fields['password1'].help_text = (
+            'Password must contain at least 8 characters, including uppercase, lowercase, '
+            'numbers, and special characters.'
+        )
+        self.fields['password2'].help_text = 'Enter the same password as before, for verification.'
+    
+    def clean_username(self):
+        """Validate username format and uniqueness"""
+        username = self.cleaned_data.get('username')
+        if username:
+            # Check length
+            if len(username) < 3:
+                raise ValidationError('Username must be at least 3 characters long.')
+            if len(username) > 30:
+                raise ValidationError('Username cannot exceed 30 characters.')
+            
+            # Check for valid characters (alphanumeric and underscores only)
+            if not username.replace('_', '').replace('-', '').isalnum():
+                raise ValidationError('Username can only contain letters, numbers, hyphens, and underscores.')
+            
+            # Check for uniqueness
+            if User.objects.filter(username=username).exists():
+                raise ValidationError('A user with this username already exists.')
+        
+        return username
+    
+    def clean_email(self):
+        """Validate email uniqueness"""
+        email = self.cleaned_data.get('email')
+        if email:
+            # Check for uniqueness
+            if User.objects.filter(email=email).exists():
+                raise ValidationError('A user with this email already exists.')
+        
+        return email
+    
+    def clean_phone_number(self):
+        """Validate phone number format"""
+        phone_number = self.cleaned_data.get('phone_number')
+        if phone_number:
+            # Remove any spaces or special characters except + and digits
+            cleaned_phone = ''.join(c for c in phone_number if c.isdigit() or c == '+')
+            if len(cleaned_phone) < 10:
+                raise ValidationError('Phone number must be at least 10 digits long.')
+            if len(cleaned_phone) > 15:
+                raise ValidationError('Phone number cannot exceed 15 digits.')
+            
+            # Check for uniqueness
+            if User.objects.filter(phone_number=phone_number).exists():
+                raise ValidationError('A user with this phone number already exists.')
+        
+        return phone_number
+    
+    def clean_first_name(self):
+        """Validate first name"""
+        first_name = self.cleaned_data.get('first_name')
+        if first_name:
+            if len(first_name.strip()) < 2:
+                raise ValidationError('First name must be at least 2 characters long.')
+            if len(first_name) > 30:
+                raise ValidationError('First name cannot exceed 30 characters.')
+        
+        return first_name.strip().title() if first_name else first_name
+    
+    def clean_last_name(self):
+        """Validate last name"""
+        last_name = self.cleaned_data.get('last_name')
+        if last_name:
+            if len(last_name.strip()) < 2:
+                raise ValidationError('Last name must be at least 2 characters long.')
+            if len(last_name) > 30:
+                raise ValidationError('Last name cannot exceed 30 characters.')
+        
+        return last_name.strip().title() if last_name else last_name
+    
+    def clean_password1(self):
+        """Validate password strength"""
+        password = self.cleaned_data.get('password1')
+        if password:
+            # Use Django's built-in password validation
+            validate_password(password)
+            
+            # Additional custom validation
+            if len(password) < 8:
+                raise ValidationError('Password must be at least 8 characters long.')
+            
+            if not any(c.isupper() for c in password):
+                raise ValidationError('Password must contain at least one uppercase letter.')
+            
+            if not any(c.islower() for c in password):
+                raise ValidationError('Password must contain at least one lowercase letter.')
+            
+            if not any(c.isdigit() for c in password):
+                raise ValidationError('Password must contain at least one number.')
+            
+            if not any(c in '!@#$%^&*()_+-=[]{}|;:,.<>?' for c in password):
+                raise ValidationError('Password must contain at least one special character.')
+            
+            # Check for common patterns
+            if password.lower() in ['password', '12345678', 'qwerty123']:
+                raise ValidationError('Password is too common. Please choose a more secure password.')
+        
+        return password
 
 class AdminUserCreationForm(UserCreationForm):
     """Form for admin/manager to create users with proper validation"""

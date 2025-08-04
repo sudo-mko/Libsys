@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'borrow',
     'reservations',
     'fines',
+    'privacy',
     'widget_tweaks',
     'django.contrib.humanize',
     'admin_dashboard',
