@@ -29,7 +29,7 @@ virtualenv/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-# media/
+media/
 
 # Node.js and npm (for Tailwind CSS)
 node_modules/
