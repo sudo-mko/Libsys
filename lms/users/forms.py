@@ -183,7 +183,7 @@ class UserRegistrationForm(UserCreationForm):
         return password
 
 class AdminUserCreationForm(UserCreationForm):
-    """Form for admin/manager to create users with proper validation"""
+    """Form for admin/manager to create users with proper validation and role restrictions"""
     email = forms.EmailField(required=True)
     phone_number = forms.CharField(
         max_length=20,
@@ -197,7 +197,7 @@ class AdminUserCreationForm(UserCreationForm):
         help_text='Enter phone number in international format (e.g., +1234567890)'
     )
     role = forms.ChoiceField(
-        choices=User.ROLE_CHOICES,
+        choices=[],  # Will be populated dynamically based on current user
         required=True,
         help_text='Select the user role'
     )
@@ -207,7 +207,19 @@ class AdminUserCreationForm(UserCreationForm):
         fields = ['username', 'email', 'first_name', 'last_name', 'phone_number', 'role', 'password1', 'password2']
     
     def __init__(self, *args, **kwargs):
+        # Extract current_user from kwargs
+        current_user = kwargs.pop('current_user', None)
         super().__init__(*args, **kwargs)
+        
+        # Set role choices based on current user's permissions
+        if current_user:
+            self.fields['role'].choices = self.get_allowed_role_choices(current_user)
+            # Store current_user for validation
+            self._current_user = current_user
+        else:
+            # Fallback to all roles if no current_user provided (shouldn't happen in normal flow)
+            self.fields['role'].choices = User.ROLE_CHOICES
+        
         # Apply consistent styling to all form fields
         field_styling = 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
         
@@ -249,6 +261,44 @@ class AdminUserCreationForm(UserCreationForm):
             'numbers, and special characters.'
         )
         self.fields['password2'].help_text = 'Enter the same password as before, for verification.'
+    
+    def get_allowed_role_choices(self, current_user):
+        """
+        Return role choices based on current user's role.
+        Managers can only create librarians and members.
+        Admins can create any role.
+        """
+        if current_user.role == 'admin':
+            # Admins can create any role
+            return User.ROLE_CHOICES
+        elif current_user.role == 'manager':
+            # Managers can only create librarians and members (not other managers or admins)
+            return [
+                ('member', 'Library Member'),
+                ('librarian', 'Librarian'),
+            ]
+        else:
+            # This shouldn't happen as the view restricts access, but just in case
+            return [('member', 'Library Member')]
+    
+    def clean_role(self):
+        """Validate that the selected role is allowed for the current user"""
+        role = self.cleaned_data.get('role')
+        
+        # Get current_user from the form's initial data
+        current_user = getattr(self, '_current_user', None)
+        
+        if current_user and role:
+            allowed_choices = dict(self.get_allowed_role_choices(current_user))
+            if role not in allowed_choices.keys():
+                if current_user.role == 'manager':
+                    raise ValidationError(
+                        "As a manager, you can only create librarian and member accounts."
+                    )
+                else:
+                    raise ValidationError("You don't have permission to create users with this role.")
+        
+        return role
     
     def clean_phone_number(self):
         """Validate phone number format"""

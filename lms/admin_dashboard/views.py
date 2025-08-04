@@ -211,7 +211,23 @@ def edit_user(request, user_id):
         user.first_name = request.POST.get('first_name', user.first_name)
         user.last_name = request.POST.get('last_name', user.last_name)
         user.email = request.POST.get('email', user.email)
-        user.role = request.POST.get('role', user.role)
+        
+        # Handle role changes with permission checks
+        new_role = request.POST.get('role', user.role)
+        if new_role != user.role:
+            # Check if current user can assign this role
+            if request.user.role == 'admin':
+                # Admins can assign any role
+                user.role = new_role
+            elif request.user.role == 'manager':
+                # Managers can only assign member and librarian roles
+                if new_role in ['member', 'librarian']:
+                    user.role = new_role
+                else:
+                    messages.error(request, "You don't have permission to assign admin or manager roles.")
+            else:
+                messages.error(request, "You don't have permission to change user roles.")
+        
         user.is_active = request.POST.get('is_active') == 'on'
         
         # Handle membership
@@ -236,10 +252,21 @@ def edit_user(request, user_id):
         messages.success(request, f"User {user.username} updated successfully.")
         return redirect('admin_dashboard:manage_users')
     
+    # Filter role choices based on current user's permissions
+    if request.user.role == 'admin':
+        allowed_roles = User.ROLE_CHOICES
+    elif request.user.role == 'manager':
+        allowed_roles = [
+            ('member', 'Library Member'),
+            ('librarian', 'Librarian'),
+        ]
+    else:
+        allowed_roles = []
+    
     context = {
         'user_obj': user,
         'membership_types': MembershipType.objects.all(),
-        'role_choices': User.ROLE_CHOICES,
+        'role_choices': allowed_roles,
     }
     
     return render(request, 'admin_dashboard/edit_user.html', context)

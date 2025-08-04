@@ -282,7 +282,7 @@ def create_user(request):
     from .forms import AdminUserCreationForm
     
     if request.method == 'POST':
-        form = AdminUserCreationForm(request.POST)
+        form = AdminUserCreationForm(request.POST, current_user=request.user)
         if form.is_valid():
             try:
                 # Create user with proper validation
@@ -300,7 +300,7 @@ def create_user(request):
                 for error in errors:
                     messages.error(request, f'{field}: {error}')
     else:
-        form = AdminUserCreationForm()
+        form = AdminUserCreationForm(current_user=request.user)
     
     context = {'form': form}
     return render(request, 'manager/create_user.html', context)
@@ -746,8 +746,15 @@ def edit_user(request, user_id):
         user.first_name = request.POST.get('first_name', '')
         user.last_name = request.POST.get('last_name', '')
         user.email = request.POST.get('email', '')
-        user.role = request.POST.get('role', 'member')
         user.phone_number = request.POST.get('phone_number', '')
+        
+        # Handle role changes with permission checks (managers can only assign member/librarian roles)
+        new_role = request.POST.get('role', user.role)
+        if new_role != user.role:
+            if new_role in ['member', 'librarian']:
+                user.role = new_role
+            else:
+                messages.error(request, "As a manager, you can only assign member and librarian roles.")
         
         try:
             user.save()
@@ -756,8 +763,15 @@ def edit_user(request, user_id):
         except Exception as e:
             messages.error(request, f'Error updating user: {str(e)}')
     
+    # Filter role choices based on manager permissions
+    allowed_roles = [
+        ('member', 'Library Member'),
+        ('librarian', 'Librarian'),
+    ]
+    
     context = {
         'user': user,
+        'role_choices': allowed_roles,
     }
     
     return render(request, 'manager/edit_user.html', context)
