@@ -75,22 +75,39 @@ def book_detail(request, book_id):
     return render(request, 'librarian/book_detail.html', context)
 
 
+@login_required
 def book_add(request):
-    books = Book.objects.all() # type: ignore
-    paginator = Paginator(books, 10)
+    # Check if user has permission to manage books (librarian, manager, or admin)
+    if request.user.role not in ['librarian', 'manager', 'admin']:
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden("You don't have permission to manage books.")
+    
+    books = Book.objects.all().order_by('-id') # type: ignore
+    paginator = Paginator(books, 15)  # Show 15 books per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     form = BookForm(request.POST or None, request.FILES or None)
     if form.is_valid():
         form.save()
-        return redirect('library:home')
-    context = {'form': form, 'books': page_obj}    
+        return redirect('library:book_add')  # Redirect to same page to see new book
+    
+    context = {
+        'form': form, 
+        'books': page_obj,  # Paginated books for iteration
+        'page_obj': page_obj  # Page object for pagination controls
+    }    
     return render(request, 'librarian/book_create.html', context)
 
 
 
+@login_required
 def book_update(request, book_id):
+    # Check if user has permission to manage books (librarian, manager, or admin)
+    if request.user.role not in ['librarian', 'manager', 'admin']:
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden("You don't have permission to manage books.")
+    
     book = get_object_or_404(Book, id=book_id)
     
     if request.method == 'POST':
@@ -118,7 +135,13 @@ def book_update(request, book_id):
     context = {'form': form, 'book': book}
     return render(request, 'librarian/book_update.html', context)
 
+@login_required
 def book_delete(request, book_id):
+    # Check if user has permission to manage books (librarian, manager, or admin)
+    if request.user.role not in ['librarian', 'manager', 'admin']:
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden("You don't have permission to manage books.")
+    
     book = get_object_or_404(Book, id=book_id)
     
     if request.method == 'POST':
