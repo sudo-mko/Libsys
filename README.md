@@ -36,6 +36,8 @@ A comprehensive web-based Library Management System built with Django and Tailwi
 - **Authentication**: Django's built-in authentication with custom User model
 - **File Uploads**: Django's file handling for book covers
 - **Build Tools**: Node.js, npm for Tailwind CSS compilation
+- **Security**: HSTS (HTTP Strict Transport Security) with custom SSL server
+- **SSL/TLS**: Self-signed certificates for development demo
 
 ## 📋 Prerequisites
 
@@ -131,25 +133,37 @@ python manage.py loaddata initial_data.json
 In one terminal, navigate to root project directory and start the CSS build:
 
 ```bash
-python mangae.py tailwind start
+python manage.py tailwind start
 ```
 
 This will watch for changes and rebuild your CSS automatically.
 
-### 2. Start Django Development Server
+### 2. Start Secure Development Server (HSTS Demo)
 
-In another terminal, run the Django server:
+In another terminal, run the secure server:
 
 ```bash
 cd lms
-python manage.py runserver
+python3 secure_server.py
 ```
 
-The application will be available at: `http://127.0.0.1:8000/`
+This starts both HTTP (port 8000) and HTTPS (port 8443) servers with HSTS security headers.
 
-### 3. Access Admin Panel
+### 3. Access the Application
 
-Visit `http://127.0.0.1:8000/admin/` and log in with the superuser credentials you created.
+- **Main Application**: `https://127.0.0.1:8443/`
+- **HTTP Redirect**: `http://127.0.0.1:8000/` (redirects to HTTPS)
+- **Admin Panel**: `https://127.0.0.1:8443/admin/`
+- **HSTS Demo**: `https://127.0.0.1:8443/hsts-demo/`
+
+### 4. Security Demo Instructions
+
+1. **Visit the main app**: `https://127.0.0.1:8443/` (accept the security warning)
+2. **Test downgrade protection**: Try changing `https://` to `http://` in the URL (will fail - this is correct!)
+3. **Test HTTP redirect**: Visit `http://127.0.0.1:8000/` (redirects to HTTPS)
+4. **HSTS Demo**: Visit `https://127.0.0.1:8443/hsts-demo/` for detailed HSTS explanation
+
+**Note**: The browser will show a security warning due to the self-signed certificate. Click "Advanced" and "Proceed to localhost (unsafe)" to continue.
 
 ## 📁 Project Structure
 
@@ -232,6 +246,28 @@ The system supports different user roles with varying permissions:
 
 
 
+## 🔒 HSTS Security Implementation
+
+This project includes a comprehensive HSTS (HTTP Strict Transport Security) demonstration:
+
+### Security Features
+- **HSTS Headers**: `Strict-Transport-Security: max-age=3600; includeSubDomains`
+- **HTTP to HTTPS Redirect**: Automatic redirection from HTTP to HTTPS
+- **Downgrade Protection**: Prevents manual HTTP access on secure ports
+- **Self-signed Certificates**: For development and demo purposes
+- **CSRF Protection**: Configured for HTTPS with trusted origins
+
+### Security Headers
+- `X-Frame-Options: DENY` - Prevents clickjacking
+- `X-Content-Type-Options: nosniff` - Prevents MIME type sniffing
+- `Referrer-Policy: strict-origin-when-cross-origin` - Controls referrer information
+- `Cross-Origin-Opener-Policy: same-origin` - Prevents cross-origin attacks
+
+### Demo Files
+- `secure_server.py` - Custom SSL server with HSTS support
+- `test_hsts_headers.py` - Script to verify HSTS headers
+- `hsts_middleware.py` - Custom Django middleware for HSTS headers
+
 ## 🆘 Troubleshooting
 
 ### Common Issues
@@ -241,6 +277,8 @@ The system supports different user roles with varying permissions:
 3. **Permission denied**: Make sure you're in the virtual environment and have proper permissions
 4. **Node.js errors**: Ensure Node.js and npm are properly installed
 5. **Npm path error**: You may need to adjust the NPM path in settings depending on the operating system you have, the path is different for windows and mac/linux
+6. **SSL certificate warning**: This is expected with self-signed certificates. Accept the warning to proceed
+7. **HTTP connection errors**: When trying to access HTTP on port 8443, this is correct behavior - the server only accepts HTTPS
 
 ## 👥 Made By
 
