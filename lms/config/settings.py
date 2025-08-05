@@ -28,6 +28,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# CSRF Trusted Origins for HTTPS demo
+CSRF_TRUSTED_ORIGINS = [
+    'https://127.0.0.1:8443',
+    'https://localhost:8443',
+]
+
 
 # Application definition
 
@@ -65,6 +71,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_browser_reload.middleware.BrowserReloadMiddleware",
+    'hsts_middleware.HSTSMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -136,6 +143,13 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Static files configuration
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'theme', 'static'),
+]
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -154,7 +168,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-NPM_BIN_PATH = r"C:/Program Files/nodejs/npm.cmd"
+NPM_BIN_PATH = "/usr/local/bin/npm"
 
 # Account Lock Settings
 ACCOUNT_LOCK_SETTINGS = {
@@ -178,6 +192,27 @@ PASSWORD_POLICY = {
     'FORCE_CHANGE_ON_FIRST_LOGIN': False,
 }
 
+# HSTS and Security Settings for Demo
+# This is a key setting for HSTS. It specifies the duration (in seconds)
+# that the browser should remember the HSTS policy.
+# For a demo, a small value is fine (e.g., 3600 seconds = 1 hour).
+# For a production app, this should be a much larger number (e.g., 31536000 for one year).
+SECURE_HSTS_SECONDS = 3600
 
+# This setting tells the browser to also apply the HSTS policy to all subdomains.
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
+# This tells the browser to automatically redirect all HTTP requests to HTTPS.
+# Since the secure server will only serve HTTPS, this is a good
+# way to ensure the demo is secure from the start.
+# SECURE_SSL_REDIRECT = True  # Temporarily disabled to avoid redirect loops
 
+# These are good to include for a comprehensive security demo.
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# Additional security headers for HTTPS demo
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
