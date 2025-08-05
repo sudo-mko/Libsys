@@ -188,10 +188,9 @@ SESSION_TIMEOUT_BY_ROLE = {
 
 # Password Policy Settings
 PASSWORD_POLICY = {
-    'ADMIN_MANAGER_EXPIRY_DAYS': 180,  # 6 months
-    'FORCE_CHANGE_ON_FIRST_LOGIN': False,
+    'ADMIN_MANAGER_EXPIRY_DAYS': 0.000694444,  # 6 months
+    'FORCE_CHANGE_ON_FIRST_LOGIN': True,
 }
-
 # HSTS and Security Settings for Demo
 # This is a key setting for HSTS. It specifies the duration (in seconds)
 # that the browser should remember the HSTS policy.

@@ -63,6 +63,11 @@ def login_view(request):
             if authenticated_user is not None:
                 # Reset lock status on successful login (but keep failed attempts for analytics)
                 authenticated_user.reset_lock_status()
+                
+                # Mark admin login time for password change delay
+                if authenticated_user.role == 'admin':
+                    authenticated_user.mark_admin_login(request)
+                
                 login(request, authenticated_user, backend='django.contrib.auth.backends.ModelBackend')
                 messages.success(request, f"Welcome back, {username}!")
                 

@@ -684,6 +684,10 @@ def change_password(request):
             # Mark password as changed
             user.mark_password_changed()
             
+            # Clear admin login time from session after password change
+            if user.role == 'admin':
+                request.session.pop('admin_login_time', None)
+            
             # Update session to prevent logout
             update_session_auth_hash(request, user)
             
@@ -708,6 +712,15 @@ def change_password(request):
     # Check if password change is mandatory
     is_mandatory = (request.user.password_change_required or 
                    request.user.is_password_expired())
+    
+    # For admin users, check if delay has passed
+    if request.user.role == 'admin' and request.session.get('admin_login_time'):
+        remaining_seconds = request.user.get_password_change_remaining_seconds(request)
+        
+        if remaining_seconds > 0:
+            is_mandatory = False
+            messages.info(request, 
+                f"Password change will be required in {remaining_seconds} seconds.")
     
     context = {
         'form': form,

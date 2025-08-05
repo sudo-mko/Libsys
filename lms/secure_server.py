@@ -98,6 +98,18 @@ def create_ssl_context():
     
     return context
 
+def https_wsgi_wrapper(app):
+    """WSGI wrapper to properly set HTTPS environment variables"""
+    def wrapped_app(environ, start_response):
+        # Set HTTPS environment variables
+        environ['wsgi.url_scheme'] = 'https'
+        environ['HTTP_X_FORWARDED_PROTO'] = 'https'
+        environ['HTTP_X_FORWARDED_SSL'] = 'on'
+        
+        # Call the original application
+        return app(environ, start_response)
+    return wrapped_app
+
 def http_redirect_app(environ, start_response):
     """WSGI app that redirects HTTP to HTTPS"""
     path = environ.get('PATH_INFO', '/')
@@ -129,6 +141,9 @@ def run_secure_server():
     # Wrap with StaticFilesHandler for development
     application = StaticFilesHandler(application)
     
+    # Wrap with HTTPS environment setter
+    application = https_wsgi_wrapper(application)
+    
     # Create SSL context
     ssl_context = create_ssl_context()
     
@@ -153,7 +168,6 @@ def run_secure_server():
     print("2. Try changing https:// to http:// in the URL")
     print("3. You'll get a connection error (this is expected)")
     print("4. Use http://127.0.0.1:8000/ to test HTTP→HTTPS redirect")
-    print("5. Visit https://127.0.0.1:8443/hsts-demo/ for HSTS demo")
     print("=" * 50)
     print("Press Ctrl+C to stop the server")
     print()

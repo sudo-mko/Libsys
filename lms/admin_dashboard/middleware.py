@@ -167,13 +167,26 @@ class PasswordPolicyMiddleware:
             is_exempt = any(current_url.startswith(url) for url in exempt_urls if url)
             
             if not is_exempt:
-                # Check if password change is required
-                if (request.user.password_change_required or 
-                    request.user.is_password_expired()):
+                # Check if password change is required (with delay for admin)
+                if request.user.should_force_password_change(request):
                     
-                    messages.error(request, 
-                        "Your password has expired. Please change your password to continue.")
-                    return redirect(reverse('admin_dashboard:change_password'))
+                    # For admin users, show different message if delay hasn't passed
+                    if (request.user.role == 'admin' and 
+                        request.session.get('admin_login_time')):
+                        
+                        remaining_seconds = request.user.get_password_change_remaining_seconds(request)
+                        
+                        if remaining_seconds > 0:
+                            messages.info(request, 
+                                f"Password change will be required in {remaining_seconds} seconds.")
+                        else:
+                            messages.error(request, 
+                                "Your password has expired. Please change your password to continue.")
+                            return redirect(reverse('admin_dashboard:change_password'))
+                    else:
+                        messages.error(request, 
+                            "Your password has expired. Please change your password to continue.")
+                        return redirect(reverse('admin_dashboard:change_password'))
         
         response = self.get_response(request)
         return response

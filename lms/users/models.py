@@ -155,6 +155,55 @@ class User(AbstractUser):
         expiry_date = self.last_password_change + timedelta(days=180)  # 6 months
         return timezone.now() > expiry_date
     
+    def should_force_password_change(self, request=None):
+        """Check if user should be forced to change password (with 1-minute delay for admin)"""
+        # For non-admin users, use the original logic
+        if self.role != 'admin':
+            return (self.password_change_required or self.is_password_expired())
+        
+        # For admin users, check if password change is required or expired
+        if not (self.password_change_required or self.is_password_expired()):
+            return False
+        
+        # If no request provided, use original logic
+        if not request:
+            return True
+        
+        # Check if admin just logged in and delay hasn't passed
+        admin_login_time = request.session.get('admin_login_time')
+        if admin_login_time:
+            from datetime import datetime
+            login_time = datetime.fromisoformat(admin_login_time.replace('Z', '+00:00'))
+            delay_time = login_time + timedelta(minutes=1)
+            return timezone.now() >= delay_time
+        
+        return True
+    
+    def get_password_change_remaining_seconds(self, request):
+        """Get remaining seconds before password change is required for admin"""
+        if self.role != 'admin' or not request:
+            return 0
+        
+        admin_login_time = request.session.get('admin_login_time')
+        if admin_login_time:
+            from datetime import datetime
+            login_time = datetime.fromisoformat(admin_login_time.replace('Z', '+00:00'))
+            delay_time = login_time + timedelta(minutes=1)
+            remaining_seconds = int((delay_time - timezone.now()).total_seconds())
+            return max(0, remaining_seconds)
+        
+        return 0
+    
+    def mark_admin_login(self, request):
+        """Mark the time when admin logged in for password change delay"""
+        if self.role == 'admin' and request:
+            request.session['admin_login_time'] = timezone.now().isoformat()
+    
+    def clear_admin_login_time(self, request):
+        """Clear admin login time from session"""
+        if request and 'admin_login_time' in request.session:
+            del request.session['admin_login_time']
+    
     def mark_password_changed(self):
         """Mark that password was changed"""
         self.last_password_change = timezone.now()
