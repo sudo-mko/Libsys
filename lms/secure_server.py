@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 """
 Modern SSL server for HSTS demonstration with Python 3.13 compatibility
+
+Author: Ahmed Moustafa Abdelkalek
+UWE ID: 24033404
 """
 import os
 import sys
 import django
 import ssl
 import socket
+import threading
 from datetime import datetime, timezone, timedelta
 from wsgiref.simple_server import make_server
 from cryptography import x509
@@ -94,6 +98,26 @@ def create_ssl_context():
     
     return context
 
+def http_redirect_app(environ, start_response):
+    """WSGI app that redirects HTTP to HTTPS"""
+    path = environ.get('PATH_INFO', '/')
+    query_string = environ.get('QUERY_STRING', '')
+    
+    # Build HTTPS URL
+    https_url = f"https://127.0.0.1:8443{path}"
+    if query_string:
+        https_url += f"?{query_string}"
+    
+    # Return 301 redirect
+    status = '301 Moved Permanently'
+    headers = [
+        ('Location', https_url),
+        ('Content-Type', 'text/html'),
+        ('Content-Length', '0'),
+    ]
+    start_response(status, headers)
+    return [b'']
+
 def run_secure_server():
     """Run the secure server with HSTS headers and static file support"""
     from django.core.wsgi import get_wsgi_application
@@ -108,28 +132,42 @@ def run_secure_server():
     # Create SSL context
     ssl_context = create_ssl_context()
     
-    # Create server
-    server = make_server('127.0.0.1', 8443, application)
+    # Create HTTPS server
+    https_server = make_server('127.0.0.1', 8443, application)
+    https_server.socket = ssl_context.wrap_socket(https_server.socket, server_side=True)
     
-    # Wrap socket with SSL
-    server.socket = ssl_context.wrap_socket(server.socket, server_side=True)
+    # Create HTTP server for redirects (port 8000)
+    http_server = make_server('127.0.0.1', 8000, http_redirect_app)
     
     print("🔒 Starting Secure Development Server...")
     print("=" * 50)
-    print("📍 Server URL: https://127.0.0.1:8443/")
+    print("📍 HTTP Server: http://127.0.0.1:8000/ (redirects to HTTPS)")
+    print("📍 HTTPS Server: https://127.0.0.1:8443/")
     print("🔐 Protocol: HTTPS with HSTS")
     print("📁 Static files: Enabled")
     print("⚠️  Note: Browser will show security warning (self-signed certificate)")
     print("   Click 'Advanced' and 'Proceed to localhost (unsafe)' to continue")
     print("=" * 50)
+    print("💡 Demo Instructions:")
+    print("1. Visit https://127.0.0.1:8443/ for the main application")
+    print("2. Try changing https:// to http:// in the URL")
+    print("3. You'll get a connection error (this is expected)")
+    print("4. Use http://127.0.0.1:8000/ to test HTTP→HTTPS redirect")
+    print("5. Visit https://127.0.0.1:8443/hsts-demo/ for HSTS demo")
+    print("=" * 50)
     print("Press Ctrl+C to stop the server")
     print()
     
+    # Start HTTP server in a separate thread
+    http_thread = threading.Thread(target=http_server.serve_forever, daemon=True)
+    http_thread.start()
+    
     try:
-        server.serve_forever()
+        https_server.serve_forever()
     except KeyboardInterrupt:
         print("\n🛑 Shutting down server...")
-        server.shutdown()
+        https_server.shutdown()
+        http_server.shutdown()
 
 if __name__ == '__main__':
     run_secure_server() 

@@ -1,6 +1,13 @@
 """
 Custom middleware to add HSTS headers for demo purposes
 """
+"""
+HSTS Middleware for adding Strict-Transport-Security headers
+
+Author: Ahmed Moustafa Abdelkalek
+UWE ID: 24033404
+"""
+
 from django.utils.deprecation import MiddlewareMixin
 
 class HSTSMiddleware(MiddlewareMixin):
