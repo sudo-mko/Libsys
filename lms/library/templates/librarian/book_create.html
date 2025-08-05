@@ -9,7 +9,14 @@
 <div class="container mx-auto px-4 py-8">
     <!-- Page header -->
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Book Collection</h1>
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Book Collection</h1>
+            {% if page_obj %}
+            <p class="text-sm text-gray-600 mt-1">
+                Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }} books
+            </p>
+            {% endif %}
+        </div>
         <button id="openAddBookModal" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-150 flex items-center">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -30,7 +37,7 @@
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ISBN</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Publication Year</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Publication Date</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -57,7 +64,7 @@
                             <div class="text-sm text-gray-500">{{ book.author }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ book.isbn|default:"-" }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ book.publication_date.year|default:"-" }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ book.publication_date|date:"M d, Y"|default:"-" }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <!-- Assuming you have a status field or method to determine availability -->
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
@@ -119,7 +126,7 @@
         {% endif %}
         
         <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-blue-600">
-            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} ({{ page_obj.paginator.count }} books total)
         </span>
         
         {% if page_obj.has_next %}
@@ -281,7 +288,7 @@
                                                             </div>
                                                         {% endif %}
                                                     </div>
-                                                {% elif field.name == 'publication_year' %}
+                                                {% elif field.name == 'publication_date' %}
                                                     <div class="col-span-6 md:col-span-4 space-y-1">
                                                         <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
                                                             {{ field.label }}
@@ -290,7 +297,7 @@
                                                             {% endif %}
                                                         </label>
                                                         <div class="mt-1">
-                                                            {{ field|add_class:"w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" }}
+                                                            {{ field }}
                                                         </div>
                                                         {% if field.help_text %}
                                                             <p class="text-xs text-gray-500">{{ field.help_text }}</p>

@@ -63,6 +63,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'admin_dashboard.middleware.PasswordPolicyMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
@@ -175,7 +176,7 @@ SESSION_TIMEOUT_BY_ROLE = {
 # Password Policy Settings
 PASSWORD_POLICY = {
     'ADMIN_MANAGER_EXPIRY_DAYS': 180,  # 6 months
-    'FORCE_CHANGE_ON_FIRST_LOGIN': False,
+    'FORCE_CHANGE_ON_FIRST_LOGIN': True,
 }
 
 
