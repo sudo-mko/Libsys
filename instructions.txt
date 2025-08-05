@@ -48,14 +48,22 @@ RUNNING THE PROJECT
    In one terminal (from root project directory):
    python manage.py tailwind start
 
-2. START DJANGO DEVELOPMENT SERVER
+2. START SECURE DEVELOPMENT SERVER (HSTS Demo)
    In another terminal:
    cd lms
-   python manage.py runserver
+   python3 secure_server.py
 
 3. ACCESS THE APPLICATION
-   - Main app: http://127.0.0.1:8000/
-   - Admin panel: http://127.0.0.1:8000/admin/
+   - Main app: https://127.0.0.1:8443/
+   - HTTP redirect: http://127.0.0.1:8000/ (redirects to HTTPS)
+   - Admin panel: https://127.0.0.1:8443/admin/
+   - HSTS Demo: https://127.0.0.1:8443/hsts-demo/
+
+4. SECURITY DEMO INSTRUCTIONS
+   - Visit https://127.0.0.1:8443/ (accept security warning)
+   - Try changing https:// to http:// in URL (will fail - this is correct!)
+   - Use http://127.0.0.1:8000/ to test HTTP→HTTPS redirect
+   - Visit https://127.0.0.1:8443/hsts-demo/ for HSTS demonstration
 
 ===============================================
 TEST USER CREDENTIALS
